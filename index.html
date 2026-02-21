@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Realms Point Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="stars2"></div>
+    <div class="stars3"></div>
+    
+    <div class="container">
+        <header>
+            <h1>⭐ Star Realms ⭐</h1>
+            <p class="subtitle">Authority Tracker</p>
+        </header>
+        
+        <div class="game-board">
+            <div class="player player-1" id="player1">
+                <div class="player-header">
+                    <h2>Player 1</h2>
+                    <input type="text" class="player-name" id="name1" value="Player 1" maxlength="15">
+                </div>
+                <div class="authority-display">
+                    <div class="authority-value" id="authority1">50</div>
+                    <div class="authority-label">AUTHORITY</div>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-decrease" onclick="changeAuthority(1, -10)">-10</button>
+                    <button class="btn btn-decrease" onclick="changeAuthority(1, -5)">-5</button>
+                    <button class="btn btn-decrease" onclick="changeAuthority(1, -1)">-1</button>
+                    <button class="btn btn-increase" onclick="changeAuthority(1, 1)">+1</button>
+                    <button class="btn btn-increase" onclick="changeAuthority(1, 5)">+5</button>
+                </div>
+            </div>
+            
+            <div class="vs-divider">
+                <span>VS</span>
+            </div>
+            
+            <div class="player player-2" id="player2">
+                <div class="player-header">
+                    <h2>Player 2</h2>
+                    <input type="text" class="player-name" id="name2" value="Player 2" maxlength="15">
+                </div>
+                <div class="authority-display">
+                    <div class="authority-value" id="authority2">50</div>
+                    <div class="authority-label">AUTHORITY</div>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-decrease" onclick="changeAuthority(2, -10)">-10</button>
+                    <button class="btn btn-decrease" onclick="changeAuthority(2, -5)">-5</button>
+                    <button class="btn btn-decrease" onclick="changeAuthority(2, -1)">-1</button>
+                    <button class="btn btn-increase" onclick="changeAuthority(2, 1)">+1</button>
+                    <button class="btn btn-increase" onclick="changeAuthority(2, 5)">+5</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-controls">
+            <button class="btn btn-reset" onclick="resetGame()">🔄 New Game</button>
+        </div>
+        
+        <div class="score-tracker">
+            <h3>Match Score</h3>
+            <div class="score-display">
+                <div class="score-player">
+                    <span id="score1">0</span>
+                    <small>Wins</small>
+                </div>
+                <div class="score-divider">-</div>
+                <div class="score-player">
+                    <span id="score2">0</span>
+                    <small>Wins</small>
+                </div>
+            </div>
+            <button class="btn btn-small" onclick="resetScore()">Reset Score</button>
+        </div>
+        
+        <div class="history">
+            <h3>Game History</h3>
+            <div id="historyList" class="history-list"></div>
+        </div>
+    </div>
+    
+    <div class="victory-overlay" id="victoryOverlay">
+        <div class="victory-content">
+            <div class="victory-text" id="victoryText">Victory!</div>
+            <button class="btn btn-reset" onclick="closeVictory()">Continue</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
