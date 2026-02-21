@@ -424,10 +424,11 @@ body.table-mode .container {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    position: relative;
 }
 
 body.table-mode header {
-    position: fixed;
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -448,7 +449,6 @@ body.table-mode .game-board {
     gap: 0;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     padding: 20px 0;
 }
 
@@ -459,7 +459,7 @@ body.table-mode .player {
     flex-direction: column;
     justify-content: center;
     padding: 20px;
-    max-height: 45%;
+    max-height: calc(50% - 35px);
 }
 
 body.table-mode .player-1 {
