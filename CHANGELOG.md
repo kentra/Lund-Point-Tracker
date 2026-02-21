@@ -9,6 +9,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - AGENTS.md file with development guidelines and code style conventions
 
+### Changed
+- Optimized UI for head-to-head gameplay
+- Added Table Mode (📱 button) that rotates Player 2's panel 180° for across-table play
+- Larger, more prominent authority numbers for quick reading
+- Bigger touch-friendly buttons with common damage values (-20, -10, -5, -1, +1, +5)
+- Simplified layout with collapsible menu panel
+- Win counts moved to player headers for constant visibility
+- Full-screen player panels in Table Mode
+
 ## [0.1.0] - 2026-02-21
 
 ### Added

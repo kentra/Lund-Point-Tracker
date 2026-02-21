@@ -4,12 +4,12 @@ Feature roadmap for Star Realms Point Tracker
 
 ## High Priority
 
-- [ ] Add sound effects for authority changes and victory
 - [ ] Implement undo functionality for last authority change
 - [ ] Add keyboard shortcuts for common actions
 
 ## Medium Priority
 
+- [ ] Add sound effects for authority changes and victory
 - [ ] Support for 3+ player games (commander format)
 - [ ] Dark/light theme toggle
 - [ ] Add custom starting authority option
@@ -34,3 +34,4 @@ Feature roadmap for Star Realms Point Tracker
 - [x] Game history log
 - [x] Local storage persistence
 - [x] Responsive mobile design
+- [x] Table mode for head-to-head play
