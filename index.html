@@ -317,12 +317,14 @@
                     </div>
 
                     <div className={`victory-overlay ${winner ? 'show' : ''}`}>
-                        <img 
-                            src="Spaceship_Explosion_720p.gif" 
-                            className="explosion-gif" 
-                            alt="Explosion"
-                            key={winner} 
-                        />
+                        <video 
+                            className="explosion-video"
+                            autoPlay
+                            playsInline
+                            key={winner}
+                        >
+                            <source src="Spaceship_Explosion_GIF_Generation.mp4" type="video/mp4" />
+                        </video>
                         <div className="victory-content">
                             <div className="victory-text">{winner ? getVictoryMessage(winner, winnerAuthority) : ''}</div>
                             <button className="btn btn-reset" onClick={closeVictoryAndReset}>New Game</button>

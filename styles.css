@@ -393,7 +393,7 @@ h1 {
     overflow: hidden;
 }
 
-.explosion-gif {
+.explosion-video {
     position: absolute;
     top: 0;
     left: 0;
@@ -401,13 +401,6 @@ h1 {
     height: 100%;
     object-fit: cover;
     z-index: -1;
-    animation: gif-once 8s forwards;
-}
-
-@keyframes gif-once {
-    0% { opacity: 1; }
-    70% { opacity: 1; }
-    100% { opacity: 0; }
 }
 
 .victory-overlay.show {
