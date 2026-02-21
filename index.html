@@ -32,6 +32,7 @@
             const [tableMode, setTableMode] = useState(false);
             const [showMenu, setShowMenu] = useState(false);
             const [winner, setWinner] = useState(null);
+            const [winnerAuthority, setWinnerAuthority] = useState(0);
 
             useEffect(() => {
                 loadState();
@@ -126,6 +127,7 @@
             function endGame(winnerNum) {
                 setGameOver(true);
                 const winnerName = winnerNum === 1 ? player1Name : player2Name;
+                const winnerAuth = winnerNum === 1 ? player1Authority : player2Authority;
 
                 if (winnerNum === 1) {
                     setPlayer1Score(prev => prev + 1);
@@ -135,6 +137,16 @@
 
                 addHistory(`${winnerName} wins!`, winnerNum);
                 setWinner(winnerName);
+                setWinnerAuthority(winnerAuth);
+            }
+
+            function getVictoryMessage(winnerName, authority) {
+                if (authority >= 50) return `${winnerName} dominated.`;
+                if (authority >= 40) return `${winnerName} was superior.`;
+                if (authority >= 30) return `${winnerName} is victorious.`;
+                if (authority >= 20) return `${winnerName} won that one.`;
+                if (authority >= 10) return `${winnerName} got lucky.`;
+                return `${winnerName} vant på fett håret.`;
             }
 
             function resetGame() {
@@ -142,6 +154,7 @@
                 setPlayer2Authority(STARTING_AUTHORITY);
                 setGameOver(false);
                 setWinner(null);
+                setWinnerAuthority(0);
                 addHistory('--- New Game ---', 0);
             }
 
@@ -305,7 +318,7 @@
 
                     <div className={`victory-overlay ${winner ? 'show' : ''}`}>
                         <div className="victory-content">
-                            <div className="victory-text">{winner} Wins!</div>
+                            <div className="victory-text">{winner ? getVictoryMessage(winner, winnerAuthority) : ''}</div>
                             <button className="btn btn-reset" onClick={closeVictoryAndReset}>New Game</button>
                         </div>
                     </div>
