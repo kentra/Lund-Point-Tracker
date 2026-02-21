@@ -1,4 +1,4 @@
-°
+Move the <header> tag and its contents <h1> and “header-controls” to be placed between “player1” and ”player2” so it is centered on the screen.
 
 # TODO
 
