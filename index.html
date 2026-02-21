@@ -327,6 +327,8 @@
                 
                 return msg.substring(0, 100);
             }
+
+            function getVictoryMessage(winnerName, authority) {
                 if (authority >= 50) return `${winnerName} dominated.`;
                 if (authority >= 40) return `${winnerName} was superior.`;
                 if (authority >= 30) return `${winnerName} is victorious.`;
