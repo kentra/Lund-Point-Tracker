@@ -120,6 +120,17 @@ h1 {
     border-color: #00d4ff;
 }
 
+.btn-rotate {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #333355;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #aaaacc;
+    line-height: 1;
+}
+
 .game-board {
     display: flex;
     flex-direction: column;
@@ -151,6 +162,7 @@ h1 {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+    gap: 8px;
     padding: 0 5px;
 }
 

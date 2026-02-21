@@ -25,6 +25,8 @@
             const [player2Score, setPlayer2Score] = useState(0);
             const [player1Name, setPlayer1Name] = useState('Player 1');
             const [player2Name, setPlayer2Name] = useState('Player 2');
+            const [player1Rotation, setPlayer1Rotation] = useState(0);
+            const [player2Rotation, setPlayer2Rotation] = useState(0);
             const [gameHistory, setGameHistory] = useState([]);
             const [gameOver, setGameOver] = useState(false);
             const [tableMode, setTableMode] = useState(false);
@@ -37,7 +39,7 @@
 
             useEffect(() => {
                 saveState();
-            }, [player1Authority, player2Authority, player1Score, player2Score, player1Name, player2Name, gameHistory, gameOver, tableMode]);
+            }, [player1Authority, player2Authority, player1Score, player2Score, player1Name, player2Name, gameHistory, gameOver, tableMode, player1Rotation, player2Rotation]);
 
             useEffect(() => {
                 document.body.classList.toggle('table-mode', tableMode);
@@ -51,6 +53,8 @@
                     player2Score,
                     player1Name,
                     player2Name,
+                    player1Rotation,
+                    player2Rotation,
                     gameHistory,
                     gameOver,
                     tableMode,
@@ -69,6 +73,8 @@
                         setPlayer2Score(state.player2Score ?? 0);
                         setPlayer1Name(state.player1Name ?? 'Player 1');
                         setPlayer2Name(state.player2Name ?? 'Player 2');
+                        setPlayer1Rotation(state.player1Rotation ?? 0);
+                        setPlayer2Rotation(state.player2Rotation ?? 0);
                         setGameHistory(state.gameHistory ?? []);
                         setGameOver(state.gameOver ?? false);
                         setTableMode(state.tableMode ?? false);
@@ -152,6 +158,14 @@
                 setShowMenu(prev => !prev);
             }
 
+            function rotatePlayer(player) {
+                if (player === 1) {
+                    setPlayer1Rotation(prev => (prev + 90) % 360);
+                } else {
+                    setPlayer2Rotation(prev => (prev + 90) % 360);
+                }
+            }
+
             function closeVictoryAndReset() {
                 setWinner(null);
                 resetGame();
@@ -171,8 +185,16 @@
 
                     <div className="container">
                         <div className="game-board">
-                            <div className={`player player-1 ${gameOver ? 'defeated' : ''}`}>
+                            <div 
+                                className={`player player-1 ${gameOver ? 'defeated' : ''}`}
+                                style={{ transform: `rotate(${player1Rotation}deg)` }}
+                            >
                                 <div className="player-header">
+                                    <button 
+                                        className="btn btn-rotate" 
+                                        onClick={() => rotatePlayer(1)}
+                                        title="Rotate 90°"
+                                    >↻</button>
                                     <input
                                         type="text"
                                         className="player-name"
@@ -212,8 +234,16 @@
                                 </div>
                             </header>
 
-                            <div className={`player player-2 ${gameOver ? 'defeated' : ''}`}>
+                            <div 
+                                className={`player player-2 ${gameOver ? 'defeated' : ''}`}
+                                style={{ transform: `rotate(${player2Rotation}deg)` }}
+                            >
                                 <div className="player-header">
+                                    <button 
+                                        className="btn btn-rotate" 
+                                        onClick={() => rotatePlayer(2)}
+                                        title="Rotate 90°"
+                                    >↻</button>
                                     <input
                                         type="text"
                                         className="player-name"
