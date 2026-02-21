@@ -443,6 +443,14 @@ body.table-mode h1 {
     font-size: 1rem;
 }
 
+body.table-mode .player-1 {
+    z-index: 150;
+}
+
+body.table-mode .player-2 {
+    z-index: 50;
+}
+
 body.table-mode .game-board {
     flex: 1;
     margin: 0;
