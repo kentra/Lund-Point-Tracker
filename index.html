@@ -36,6 +36,12 @@
             const [winnerAuthority, setWinnerAuthority] = useState(0);
             const [videoKey, setVideoKey] = useState(0);
             const [showVideo, setShowVideo] = useState(false);
+            const [lastMatchSummary, setLastMatchSummary] = useState('');
+            const [player1HighestDamage, setPlayer1HighestDamage] = useState(0);
+            const [player2HighestDamage, setPlayer2HighestDamage] = useState(0);
+            const [player1HighestHeal, setPlayer1HighestHeal] = useState(0);
+            const [player2HighestHeal, setPlayer2HighestHeal] = useState(0);
+            const [gameStartTime, setGameStartTime] = useState(null);
 
             const audioCtxRef = useRef(null);
             const newGameAudioRef = useRef(null);
@@ -211,10 +217,25 @@
             function changeAuthority(player, amount) {
                 if (gameOver && amount < 0) return;
 
+                if (gameStartTime === null && amount < 0) {
+                    setGameStartTime(Date.now());
+                }
+
                 if (amount < 0) {
                     playLaserSound(amount);
+                    const damage = Math.abs(amount);
+                    if (player === 1) {
+                        setPlayer1HighestDamage(prev => Math.max(prev, damage));
+                    } else {
+                        setPlayer2HighestDamage(prev => Math.max(prev, damage));
+                    }
                 } else if (amount > 0) {
                     playWorkshopSound(amount);
+                    if (player === 1) {
+                        setPlayer1HighestHeal(prev => Math.max(prev, amount));
+                    } else {
+                        setPlayer2HighestHeal(prev => Math.max(prev, amount));
+                    }
                 }
 
                 const name = player === 1 ? player1Name : player2Name;
@@ -256,7 +277,21 @@
             function endGame(winnerNum) {
                 setGameOver(true);
                 const winnerName = winnerNum === 1 ? player1Name : player2Name;
+                const loserName = winnerNum === 1 ? player2Name : player1Name;
                 const winnerAuth = winnerNum === 1 ? player1Authority : player2Authority;
+                
+                const duration = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
+                const minutes = Math.floor(duration / 60);
+                const seconds = duration % 60;
+                const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                const winnerHighestDamage = winnerNum === 1 ? player1HighestDamage : player2HighestDamage;
+                const loserHighestDamage = winnerNum === 1 ? player2HighestDamage : player1HighestDamage;
+                const winnerHighestHeal = winnerNum === 1 ? player1HighestHeal : player2HighestHeal;
+                const loserHighestHeal = winnerNum === 1 ? player2HighestHeal : player1HighestHeal;
+                
+                const summary = generateMatchSummary(winnerName, winnerAuth, loserName, winnerHighestDamage, loserHighestDamage, winnerHighestHeal, loserHighestHeal, timeStr);
+                setLastMatchSummary(summary);
 
                 if (winnerNum === 1) {
                     setPlayer1Score(prev => prev + 1);
@@ -269,9 +304,29 @@
                 setWinnerAuthority(winnerAuth);
                 setVideoKey(prev => prev + 1);
                 setShowVideo(true);
+                
+                setPlayer1HighestDamage(0);
+                setPlayer2HighestDamage(0);
+                setPlayer1HighestHeal(0);
+                setPlayer2HighestHeal(0);
+                setGameStartTime(null);
             }
 
-            function getVictoryMessage(winnerName, authority) {
+            function generateMatchSummary(winnerName, winnerAuth, loserName, winnerDmg, loserDmg, winnerHeal, loserHeal, timeStr) {
+                let msg = "";
+                
+                if (winnerAuth >= 40) {
+                    msg = `${winnerName} DESTROYED ${loserName} with ${winnerDmg} damage on their best turn! ${winnerName} healed ${winnerHeal} at their best! Match lasted ${timeStr}! ${loserName} only managed ${loserDmg} damage - pathetic! ${winnerName} is a LEGEND! ${loserName} should be embarrassed!`;
+                } else if (winnerAuth >= 25) {
+                    msg = `${winnerName} dominated with ${winnerDmg} damage combo! ${winnerName} healed ${winnerHeal} at peak! ${timeStr} match! ${loserName} only had ${loserDmg} damage - too weak! ${winnerName} wins! ${loserName} needs practice!`;
+                } else if (winnerAuth >= 10) {
+                    msg = `${winnerName} secured the win with ${winnerDmg} damage strike! ${winnerName} popped ${winnerHeal} heal! ${timeStr} battle! ${loserName} had ${loserDmg} damage - should have done more! ${winnerName} takes glory!`;
+                } else {
+                    msg = `${winnerName} BARELY SURVIVED with just ${winnerDmg} damage on the final blow! ${winnerName} healed ${winnerHeal} at their best! ${timeStr} of chaos! ${loserName} had ${loserDmg} damage - so close yet so far! ${winnerName} has NERVES OF STEEL!`;
+                }
+                
+                return msg.substring(0, 100);
+            }
                 if (authority >= 50) return `${winnerName} dominated.`;
                 if (authority >= 40) return `${winnerName} was superior.`;
                 if (authority >= 30) return `${winnerName} is victorious.`;
@@ -382,6 +437,12 @@
                             <header>
                                 <h1>Star Realms</h1>
                                 <div className="header-controls">
+                                    <button 
+                                        className="btn btn-icon" 
+                                        onClick={() => alert(lastMatchSummary)}
+                                        title="Match Summary"
+                                        disabled={!lastMatchSummary}
+                                    >📢</button>
                                     <button
                                         className={`btn btn-icon ${tableMode ? 'active' : ''}`}
                                         onClick={toggleTableMode}

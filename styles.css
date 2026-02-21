@@ -60,6 +60,11 @@ h1 {
     border-color: #00d4ff;
 }
 
+.btn-icon:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
 .btn-rotate {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid #333355;

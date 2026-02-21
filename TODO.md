@@ -1,11 +1,23 @@
-        ReferenceError: useRef is not defined
-            App <http://127.0.0.1:6969/> line 3 > injectedScript:83
-            React 9
-        react-dom.production.min.js:121:178
-        Uncaught ReferenceError: useRef is not defined
-            App <http://127.0.0.1:6969/> line 3 > injectedScript:83
-            React 9
-        Inline Babel script:25:33
+        # Live Announcer logic
+        if gemini_client and tts_client:
+            # Trigger if damage >= 10 OR if player is eliminated
+            if log_data["amount_changed"] <= -10 or log_data["new_score"] <= 0:
+                try:
+                    event_context = f"A player named {log_data['player_name']} just took {abs(log_data['amount_changed'])} damage, bringing their score to {log_data['new_score']}."
+                    if log_data["new_score"] <= 0:
+                        event_context += " They have been eliminated!"
+
+                    prompt = f"You are a foul and spitefull Ship AI tracking and commenting a space battle. {event_context} Write a single, short, urgent warning sentence announcing this."
+
+                    response = gemini_client.models.generate_content(
+                        model="gemini-2.5-flash",
+                        contents=prompt,
+                    )
+
+                    if response.text:
+                        generate_and_emit_audio(response.text)
+                except Exception as e:
+                    print(f"Error generating Live Announcer: {e}")
 
 # TODO
 
