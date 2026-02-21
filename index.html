@@ -317,6 +317,8 @@
                     </div>
 
                     <div className={`victory-overlay ${winner ? 'show' : ''}`}>
+                        <div className="explosion explosion-1"></div>
+                        <div className="explosion explosion-2"></div>
                         <div className="victory-content">
                             <div className="victory-text">{winner ? getVictoryMessage(winner, winnerAuthority) : ''}</div>
                             <button className="btn btn-reset" onClick={closeVictoryAndReset}>New Game</button>

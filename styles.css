@@ -385,11 +385,76 @@ h1 {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.95);
+    background: radial-gradient(circle at center, #1a0a2e 0%, #0a0a20 100%);
     display: none;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    overflow: hidden;
+}
+
+.victory-overlay::before,
+.victory-overlay::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    animation: explode 3s ease-out infinite;
+}
+
+.victory-overlay::before {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255, 100, 0, 0.8) 0%, rgba(255, 200, 0, 0.4) 40%, transparent 70%);
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.victory-overlay::after {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255, 50, 50, 0.7) 0%, rgba(255, 150, 0, 0.4) 40%, transparent 70%);
+    bottom: 10%;
+    right: 5%;
+    animation-delay: 1.5s;
+}
+
+.explosion {
+    position: absolute;
+    border-radius: 50%;
+    animation: explode 4s ease-out infinite;
+}
+
+.explosion-1 {
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(255, 0, 255, 0.6) 0%, rgba(255, 100, 200, 0.3) 40%, transparent 70%);
+    top: 50%;
+    right: 20%;
+    animation-delay: 0.8s;
+}
+
+.explosion-2 {
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.5) 0%, rgba(0, 200, 255, 0.3) 40%, transparent 70%);
+    bottom: 30%;
+    left: 15%;
+    animation-delay: 2s;
+}
+
+@keyframes explode {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
 }
 
 .victory-overlay.show {
@@ -419,16 +484,28 @@ h1 {
     margin-bottom: 30px;
     text-transform: uppercase;
     letter-spacing: 3px;
-    background: linear-gradient(to right, #ff4444, #ffff00, #44ff44, #4444ff, #ff44ff);
+    background: linear-gradient(90deg, #00ffff, #ff00ff, #00ffff);
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: rainbow 2s infinite;
+    animation: plasma 2s linear infinite, glow-pulse 1.5s ease-in-out infinite;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.8)) drop-shadow(0 0 40px rgba(0, 255, 255, 0.6));
 }
 
-@keyframes rainbow {
-    0% { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(360deg); }
+@keyframes plasma {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
+@keyframes glow-pulse {
+    0%, 100% { 
+        filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.8)) drop-shadow(0 0 40px rgba(0, 255, 255, 0.6));
+    }
+    50% { 
+        filter: drop-shadow(0 0 30px rgba(255, 0, 255, 1)) drop-shadow(0 0 60px rgba(0, 255, 255, 0.9));
+    }
 }
 
 .player.defeated {
