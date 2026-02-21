@@ -39,6 +39,13 @@
 
             const audioCtxRef = useRef(null);
             const newGameAudioRef = useRef(null);
+            const minusOneSoundRef = useRef(null);
+            const minusFiveSoundRef = useRef(null);
+            const minusTenSoundRef = useRef(null);
+            const minusTwentySoundRef = useRef(null);
+            const plusOneSoundRef = useRef(null);
+            const plusFiveFirstSoundRef = useRef(null);
+            const plusFiveSecondSoundRef = useRef(null);
             const getAudioCtx = () => {
                 if (!audioCtxRef.current) {
                     audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -47,6 +54,31 @@
             };
 
             function playLaserSound(amount) {
+                if (amount === -1 && minusOneSoundRef.current) {
+                    minusOneSoundRef.current.currentTime = 0;
+                    minusOneSoundRef.current.play();
+                    return;
+                }
+                if (amount === -5 && minusFiveSoundRef.current) {
+                    minusFiveSoundRef.current.currentTime = 0;
+                    minusFiveSoundRef.current.play();
+                    return;
+                }
+                if (amount === -10 && minusTenSoundRef.current) {
+                    minusTenSoundRef.current.currentTime = 0;
+                    minusTenSoundRef.current.play();
+                    return;
+                }
+                if (amount === -20 && minusTwentySoundRef.current) {
+                    minusTwentySoundRef.current.currentTime = 0;
+                    minusTwentySoundRef.current.play();
+                    setTimeout(() => {
+                        minusTwentySoundRef.current.currentTime = 0;
+                        minusTwentySoundRef.current.play();
+                    }, 100);
+                    return;
+                }
+                
                 const audioCtx = getAudioCtx();
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
@@ -74,6 +106,21 @@
             }
 
             function playWorkshopSound(amount) {
+                if (amount === 1 && plusOneSoundRef.current) {
+                    plusOneSoundRef.current.currentTime = 0;
+                    plusOneSoundRef.current.play();
+                    return;
+                }
+                if (amount === 5 && plusFiveFirstSoundRef.current && plusFiveSecondSoundRef.current) {
+                    plusFiveFirstSoundRef.current.currentTime = 0;
+                    plusFiveFirstSoundRef.current.play();
+                    plusFiveFirstSoundRef.current.onended = function() {
+                        plusFiveSecondSoundRef.current.currentTime = 0;
+                        plusFiveSecondSoundRef.current.play();
+                    };
+                    return;
+                }
+                
                 const audioCtx = getAudioCtx();
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
@@ -282,6 +329,13 @@
             return (
                 <>
                     <audio ref={newGameAudioRef} src="simple/Sound/_O.wav" preload="auto" />
+                    <audio ref={minusOneSoundRef} src="simple/Sound/Dy.wav" preload="auto" />
+                    <audio ref={minusFiveSoundRef} src="simple/Sound/D61.wav" preload="auto" />
+                    <audio ref={minusTenSoundRef} src="simple/Sound/L2.wav" preload="auto" />
+                    <audio ref={minusTwentySoundRef} src="simple/Sound/bw.wav" preload="auto" />
+                    <audio ref={plusOneSoundRef} src="simple/Sound/D6.wav" preload="auto" />
+                    <audio ref={plusFiveFirstSoundRef} src="simple/Sound/bA.wav" preload="auto" />
+                    <audio ref={plusFiveSecondSoundRef} src="simple/Sound/D6.wav" preload="auto" />
                     <div className="container">
                         <div className="game-board">
                             <div 
