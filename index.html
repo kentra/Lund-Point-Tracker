@@ -34,6 +34,7 @@
             const [winner, setWinner] = useState(null);
             const [winnerAuthority, setWinnerAuthority] = useState(0);
             const [videoKey, setVideoKey] = useState(0);
+            const [showVideo, setShowVideo] = useState(false);
 
             useEffect(() => {
                 loadState();
@@ -140,6 +141,7 @@
                 setWinner(winnerName);
                 setWinnerAuthority(winnerAuth);
                 setVideoKey(prev => prev + 1);
+                setShowVideo(true);
             }
 
             function getVictoryMessage(winnerName, authority) {
@@ -157,6 +159,7 @@
                 setGameOver(false);
                 setWinner(null);
                 setWinnerAuthority(0);
+                setShowVideo(false);
                 addHistory('--- New Game ---', 0);
             }
 
@@ -319,14 +322,16 @@
                     </div>
 
                     <div className={`victory-overlay ${winner ? 'show' : ''}`}>
-                        <video 
-                            className="explosion-video"
-                            autoPlay
-                            playsInline
-                            key={videoKey}
-                        >
-                            <source src="Spaceship_Explosion_GIF_Generation.mp4" type="video/mp4" />
-                        </video>
+                        {showVideo && (
+                            <video 
+                                className="explosion-video"
+                                autoPlay
+                                playsInline
+                                key={videoKey}
+                            >
+                                <source src="Spaceship_Explosion_GIF_Generation.mp4" type="video/mp4" />
+                            </video>
+                        )}
                         <div className="victory-content">
                             <div className="victory-text">{winner ? getVictoryMessage(winner, winnerAuthority) : ''}</div>
                             <button className="btn btn-reset" onClick={closeVictoryAndReset}>New Game</button>

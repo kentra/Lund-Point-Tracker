@@ -401,6 +401,12 @@ h1 {
     height: 100%;
     object-fit: cover;
     z-index: -1;
+    animation: video-fade 8s forwards;
+}
+
+@keyframes video-fade {
+    0%, 62.5% { opacity: 1; }
+    100% { opacity: 0; }
 }
 
 .victory-overlay.show {
