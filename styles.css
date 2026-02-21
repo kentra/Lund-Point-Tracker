@@ -18,64 +18,31 @@ body {
     min-height: 100vh;
 }
 
-.stars, .stars2, .stars3 {
+.nebula {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none;
+    background: 
+        radial-gradient(ellipse at 20% 80%, rgba(128, 0, 128, 0.4) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(0, 0, 139, 0.4) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(75, 0, 130, 0.3) 0%, transparent 60%),
+        linear-gradient(to bottom, #0a0a20, #1a1a40, #0a0a20);
+    animation: nebula-drift 20s ease-in-out infinite;
+    filter: blur(30px);
+    z-index: -2;
 }
 
-.stars::before {
-    content: '';
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background: white;
-    box-shadow: 
-        100px 50px #fff, 200px 150px #fff, 300px 80px #fff, 400px 200px #fff,
-        50px 100px #fff, 150px 300px #fff, 250px 250px #fff, 350px 350px #fff,
-        450px 100px #fff, 550px 400px #fff, 650px 250px #fff, 750px 150px #fff,
-        850px 350px #fff, 950px 50px #fff, 1050px 200px #fff, 1150px 300px #fff,
-        1250px 100px #fff, 1350px 400px #fff, 100px 450px #fff, 200px 550px #fff,
-        300px 650px #fff, 400px 500px #fff, 500px 600px #fff, 600px 450px #fff,
-        700px 550px #fff, 800px 650px #fff, 900px 500px #fff, 1000px 600px #fff;
-    animation: twinkle 4s infinite;
-}
-
-.stars2::before {
-    content: '';
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.7);
-    box-shadow: 
-        120px 70px #fff, 220px 170px #fff, 320px 100px #fff, 420px 220px #fff,
-        70px 120px #fff, 170px 320px #fff, 270px 270px #fff, 370px 370px #fff,
-        470px 120px #fff, 570px 420px #fff, 670px 270px #fff, 770px 170px #fff,
-        870px 370px #fff, 970px 70px #fff, 1070px 220px #fff, 1170px 320px #fff,
-        1270px 120px #fff, 1370px 420px #fff;
-    animation: twinkle 6s infinite 2s;
-}
-
-.stars3::before {
-    content: '';
-    position: absolute;
-    width: 1.5px;
-    height: 1.5px;
-    background: rgba(200, 200, 255, 0.8);
-    box-shadow: 
-        80px 90px #ccf, 180px 190px #ccf, 280px 120px #ccf, 380px 240px #ccf,
-        130px 140px #ccf, 230px 340px #ccf, 330px 290px #ccf, 430px 390px #ccf,
-        530px 140px #ccf, 630px 440px #ccf, 730px 290px #ccf, 830px 190px #ccf,
-        930px 390px #ccf, 1030px 90px #ccf, 1130px 240px #ccf, 1230px 340px #ccf;
-    animation: twinkle 5s infinite 1s;
-}
-
-@keyframes twinkle {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+@keyframes nebula-drift {
+    0%, 100% { 
+        transform: scale(1) rotate(0deg);
+        opacity: 0.8;
+    }
+    50% { 
+        transform: scale(1.1) rotate(3deg);
+        opacity: 1;
+    }
 }
 
 .container {
