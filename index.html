@@ -33,6 +33,7 @@
             const [showMenu, setShowMenu] = useState(false);
             const [winner, setWinner] = useState(null);
             const [winnerAuthority, setWinnerAuthority] = useState(0);
+            const [videoKey, setVideoKey] = useState(0);
 
             useEffect(() => {
                 loadState();
@@ -138,6 +139,7 @@
                 addHistory(`${winnerName} wins!`, winnerNum);
                 setWinner(winnerName);
                 setWinnerAuthority(winnerAuth);
+                setVideoKey(prev => prev + 1);
             }
 
             function getVictoryMessage(winnerName, authority) {
@@ -321,7 +323,7 @@
                             className="explosion-video"
                             autoPlay
                             playsInline
-                            key={winner}
+                            key={videoKey}
                         >
                             <source src="Spaceship_Explosion_GIF_Generation.mp4" type="video/mp4" />
                         </video>
