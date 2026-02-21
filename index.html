@@ -36,6 +36,53 @@
             const [videoKey, setVideoKey] = useState(0);
             const [showVideo, setShowVideo] = useState(false);
 
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            function playLaserSound(amount) {
+                const intensity = Math.abs(amount);
+                const baseFreq = 1200 - (intensity * 30);
+                const duration = 0.1 + (intensity * 0.005);
+                
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + duration);
+                
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + duration);
+            }
+
+            function playWorkshopSound(amount) {
+                const isBig = amount >= 5;
+                const duration = isBig ? 0.4 : 0.25;
+                const clankDelay = isBig ? 0.08 : 0.05;
+                
+                const motorOsc = audioCtx.createOscillator();
+                const motorGain = audioCtx.createGain();
+                motorOsc.type = 'sine';
+                motorOsc.frequency.setValueAtTime(80, audioCtx.currentTime);
+                motorOsc.frequency.linearRampToValueAtTime(60, audioCtx.currentTime + duration);
+                motorGain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                motorGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
+                
+                const clankOsc = audioCtx.createOscillator();
+                const clankGain = audioCtx.createGain();
+                clankOsc.type = 'square';
+                clankOsc.frequency.setValueAtTime(300 + Math.random() * 100, audioCtx.currentTime + clankDelay);
+                clankGain.gain.setValueAtTime(0.08, audioCtx.currentTime + clankDelay);
+                clankGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + clankDelay + 0.08);
+                
+                motorOsc.start();
+                clankOsc.start(audioCtx.currentTime + clankDelay);
+                motorOsc.stop(audioCtx.currentTime + duration);
+                clankOsc.stop(audioCtx.currentTime + clankDelay + 0.1);
+            }
+
             useEffect(() => {
                 loadState();
             }, []);
@@ -89,6 +136,16 @@
 
             function changeAuthority(player, amount) {
                 if (gameOver && amount < 0) return;
+
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                if (amount < 0) {
+                    playLaserSound(amount);
+                } else if (amount > 0) {
+                    playWorkshopSound(amount);
+                }
 
                 const name = player === 1 ? player1Name : player2Name;
 
