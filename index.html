@@ -4,79 +4,275 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Star Realms Point Tracker</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="stars"></div>
-    <div class="stars2"></div>
-    <div class="stars3"></div>
-    
-    <div class="container">
-        <div class="game-board" id="gameBoard">
-            <div class="player player-1" id="player1">
-                <div class="player-header">
-                    <input type="text" class="player-name" id="name1" value="Player 1" maxlength="12">
-                    <div class="score-mini"><span id="score1">0</span> wins</div>
-                </div>
-                <div class="authority-display">
-                    <div class="authority-value" id="authority1">50</div>
-                    <div class="authority-label">AUTHORITY</div>
-                </div>
-                <div class="controls">
-                    <button class="btn btn-damage" onclick="changeAuthority(1, -20)">-20</button>
-                    <button class="btn btn-damage" onclick="changeAuthority(1, -10)">-10</button>
-                    <button class="btn btn-damage" onclick="changeAuthority(1, -5)">-5</button>
-                    <button class="btn btn-damage" onclick="changeAuthority(1, -1)">-1</button>
-                    <button class="btn btn-heal" onclick="changeAuthority(1, 1)">+1</button>
-                    <button class="btn btn-heal" onclick="changeAuthority(1, 5)">+5</button>
-                </div>
-            </div>
-            
-            <header>
-                <h1>Star Realms</h1>
-                <div class="header-controls">
-                    <button class="btn btn-icon" onclick="toggleTableMode()" id="tableModeBtn" title="Table Mode">📱</button>
-                    <button class="btn btn-icon" onclick="toggleMenu()" title="Menu">⚙️</button>
-                </div>
-            </header>
-            
-            <div class="player player-2" id="player2">
-                <div class="player-header">
-                    <input type="text" class="player-name" id="name2" value="Player 2" maxlength="12">
-                    <div class="score-mini"><span id="score2">0</span> wins</div>
-                </div>
-                <div class="authority-display">
-                    <div class="authority-value" id="authority2">50</div>
-                    <div class="authority-label">AUTHORITY</div>
-                </div>
-                <div class="controls">
-                    <button class="btn btn-damage" onclick="changeAuthority(2, -20)">-20</button>
-                    <button class="btn btn-damage" onclick="changeAuthority(2, -10)">-10</button>
-                    <button class="btn btn-damage" onclick="changeAuthority(2, -5)">-5</button>
-                    <button class="btn btn-damage" onclick="changeAuthority(2, -1)">-1</button>
-                    <button class="btn btn-heal" onclick="changeAuthority(2, 1)">+1</button>
-                    <button class="btn btn-heal" onclick="changeAuthority(2, 5)">+5</button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="menu-panel" id="menuPanel">
-            <button class="btn btn-reset" onclick="resetGame()">New Game</button>
-            <button class="btn btn-small" onclick="resetScore()">Reset Score</button>
-            <div class="history">
-                <h3>Game History</h3>
-                <div id="historyList" class="history-list"></div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="victory-overlay" id="victoryOverlay">
-        <div class="victory-content">
-            <div class="victory-text" id="victoryText">Victory!</div>
-            <button class="btn btn-reset" onclick="closeVictoryAndReset()">New Game</button>
-        </div>
-    </div>
+    <div id="root"></div>
 
-    <script src="app.js"></script>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const STARTING_AUTHORITY = 50;
+        const STORAGE_KEY = 'starRealmsTracker';
+
+        function App() {
+            const [player1Authority, setPlayer1Authority] = useState(STARTING_AUTHORITY);
+            const [player2Authority, setPlayer2Authority] = useState(STARTING_AUTHORITY);
+            const [player1Score, setPlayer1Score] = useState(0);
+            const [player2Score, setPlayer2Score] = useState(0);
+            const [player1Name, setPlayer1Name] = useState('Player 1');
+            const [player2Name, setPlayer2Name] = useState('Player 2');
+            const [gameHistory, setGameHistory] = useState([]);
+            const [gameOver, setGameOver] = useState(false);
+            const [tableMode, setTableMode] = useState(false);
+            const [showMenu, setShowMenu] = useState(false);
+            const [winner, setWinner] = useState(null);
+
+            useEffect(() => {
+                loadState();
+            }, []);
+
+            useEffect(() => {
+                saveState();
+            }, [player1Authority, player2Authority, player1Score, player2Score, player1Name, player2Name, gameHistory, gameOver, tableMode]);
+
+            function saveState() {
+                const state = {
+                    player1Authority,
+                    player2Authority,
+                    player1Score,
+                    player2Score,
+                    player1Name,
+                    player2Name,
+                    gameHistory,
+                    gameOver,
+                    tableMode,
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            }
+
+            function loadState() {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    try {
+                        const state = JSON.parse(saved);
+                        setPlayer1Authority(state.player1Authority ?? STARTING_AUTHORITY);
+                        setPlayer2Authority(state.player2Authority ?? STARTING_AUTHORITY);
+                        setPlayer1Score(state.player1Score ?? 0);
+                        setPlayer2Score(state.player2Score ?? 0);
+                        setPlayer1Name(state.player1Name ?? 'Player 1');
+                        setPlayer2Name(state.player2Name ?? 'Player 2');
+                        setGameHistory(state.gameHistory ?? []);
+                        setGameOver(state.gameOver ?? false);
+                        setTableMode(state.tableMode ?? false);
+                    } catch (e) {
+                        console.error('Failed to load saved state:', e);
+                    }
+                }
+            }
+
+            function changeAuthority(player, amount) {
+                if (gameOver && amount < 0) return;
+
+                const name = player === 1 ? player1Name : player2Name;
+
+                if (player === 1) {
+                    const newValue = Math.max(0, player1Authority + amount);
+                    setPlayer1Authority(newValue);
+                    addHistory(`${name}: ${amount < 0 ? amount : '+' + amount}`, 1);
+
+                    if (newValue <= 0) {
+                        endGame(2);
+                    }
+                } else {
+                    const newValue = Math.max(0, player2Authority + amount);
+                    setPlayer2Authority(newValue);
+                    addHistory(`${name}: ${amount < 0 ? amount : '+' + amount}`, 2);
+
+                    if (newValue <= 0) {
+                        endGame(1);
+                    }
+                }
+            }
+
+            function addHistory(message, player) {
+                const item = {
+                    message,
+                    player,
+                    time: new Date().toLocaleTimeString(),
+                };
+                setGameHistory(prev => {
+                    const newHistory = [item, ...prev];
+                    if (newHistory.length > 30) {
+                        newHistory.pop();
+                    }
+                    return newHistory;
+                });
+            }
+
+            function endGame(winnerNum) {
+                setGameOver(true);
+                const winnerName = winnerNum === 1 ? player1Name : player2Name;
+
+                if (winnerNum === 1) {
+                    setPlayer1Score(prev => prev + 1);
+                } else {
+                    setPlayer2Score(prev => prev + 1);
+                }
+
+                addHistory(`${winnerName} wins!`, winnerNum);
+                setWinner(winnerName);
+            }
+
+            function resetGame() {
+                setPlayer1Authority(STARTING_AUTHORITY);
+                setPlayer2Authority(STARTING_AUTHORITY);
+                setGameOver(false);
+                setWinner(null);
+                addHistory('--- New Game ---', 0);
+            }
+
+            function resetScore() {
+                setPlayer1Score(0);
+                setPlayer2Score(0);
+            }
+
+            function toggleTableMode() {
+                setTableMode(prev => !prev);
+            }
+
+            function toggleMenu() {
+                setShowMenu(prev => !prev);
+            }
+
+            function closeVictoryAndReset() {
+                setWinner(null);
+                resetGame();
+            }
+
+            function getAuthorityClass(value) {
+                if (value <= 10) return 'danger';
+                if (value <= 20) return 'warning';
+                return '';
+            }
+
+            return (
+                <>
+                    <div className="stars"></div>
+                    <div className="stars2"></div>
+                    <div className="stars3"></div>
+
+                    <div className="container">
+                        <div className="game-board">
+                            <div className={`player player-1 ${gameOver ? 'defeated' : ''}`}>
+                                <div className="player-header">
+                                    <input
+                                        type="text"
+                                        className="player-name"
+                                        value={player1Name}
+                                        onChange={(e) => setPlayer1Name(e.target.value)}
+                                        maxLength={12}
+                                    />
+                                    <div className="score-mini">
+                                        <span>{player1Score}</span> wins
+                                    </div>
+                                </div>
+                                <div className="authority-display">
+                                    <div className={`authority-value ${getAuthorityClass(player1Authority)}`}>
+                                        {player1Authority}
+                                    </div>
+                                    <div className="authority-label">AUTHORITY</div>
+                                </div>
+                                <div className="controls">
+                                    <button className="btn btn-damage" onClick={() => changeAuthority(1, -20)}>-20</button>
+                                    <button className="btn btn-damage" onClick={() => changeAuthority(1, -10)}>-10</button>
+                                    <button className="btn btn-damage" onClick={() => changeAuthority(1, -5)}>-5</button>
+                                    <button className="btn btn-damage" onClick={() => changeAuthority(1, -1)}>-1</button>
+                                    <button className="btn btn-heal" onClick={() => changeAuthority(1, 1)}>+1</button>
+                                    <button className="btn btn-heal" onClick={() => changeAuthority(1, 5)}>+5</button>
+                                </div>
+                            </div>
+
+                            <header>
+                                <h1>Star Realms</h1>
+                                <div className="header-controls">
+                                    <button
+                                        className={`btn btn-icon ${tableMode ? 'active' : ''}`}
+                                        onClick={toggleTableMode}
+                                        title="Table Mode"
+                                    >📱</button>
+                                    <button className="btn btn-icon" onClick={toggleMenu} title="Menu">⚙️</button>
+                                </div>
+                            </header>
+
+                            <div className={`player player-2 ${gameOver ? 'defeated' : ''}`}>
+                                <div className="player-header">
+                                    <input
+                                        type="text"
+                                        className="player-name"
+                                        value={player2Name}
+                                        onChange={(e) => setPlayer2Name(e.target.value)}
+                                        maxLength={12}
+                                    />
+                                    <div className="score-mini">
+                                        <span>{player2Score}</span> wins
+                                    </div>
+                                </div>
+                                <div className="authority-display">
+                                    <div className={`authority-value ${getAuthorityClass(player2Authority)}`}>
+                                        {player2Authority}
+                                    </div>
+                                    <div className="authority-label">AUTHORITY</div>
+                                </div>
+                                <div className="controls">
+                                    <button className="btn btn-damage" onClick={() => changeAuthority(2, -20)}>-20</button>
+                                    <button className="btn btn-damage" onClick={() => changeAuthority(2, -10)}>-10</button>
+                                    <button className="btn btn-damage" onClick={() => changeAuthority(2, -5)}>-5</button>
+                                    <button className="btn btn-damage" onClick={() => changeAuthority(2, -1)}>-1</button>
+                                    <button className="btn btn-heal" onClick={() => changeAuthority(2, 1)}>+1</button>
+                                    <button className="btn btn-heal" onClick={() => changeAuthority(2, 5)}>+5</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={`menu-panel ${showMenu ? 'show' : ''}`}>
+                            <button className="btn btn-reset" onClick={resetGame}>New Game</button>
+                            <button className="btn btn-small" onClick={resetScore}>Reset Score</button>
+                            <div className="history">
+                                <h3>Game History</h3>
+                                <div className="history-list">
+                                    {gameHistory.map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className={`history-item ${
+                                                item.player === 1 ? 'player-1-action' :
+                                                item.player === 2 ? 'player-2-action' : ''
+                                            }`}
+                                        >
+                                            <span>{item.message}</span>
+                                            <span>{item.time}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={`victory-overlay ${winner ? 'show' : ''}`}>
+                        <div className="victory-content">
+                            <div className="victory-text">{winner} Wins!</div>
+                            <button className="btn btn-reset" onClick={closeVictoryAndReset}>New Game</button>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>

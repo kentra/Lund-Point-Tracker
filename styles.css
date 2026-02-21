@@ -14,6 +14,10 @@ body {
     touch-action: manipulation;
 }
 
+#root {
+    min-height: 100vh;
+}
+
 .stars, .stars2, .stars3 {
     position: fixed;
     top: 0;
@@ -88,6 +92,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 10px 5px;
+    order: -1;
 }
 
 h1 {
@@ -120,10 +125,6 @@ h1 {
     flex-direction: column;
     gap: 10px;
     margin: 10px 0;
-}
-
-header {
-    order: -1;
 }
 
 .player {
@@ -417,7 +418,7 @@ header {
     80% { transform: translateX(10px); }
 }
 
-/* Table Mode - For head-to-head play across a table */
+/* Table Mode */
 body.table-mode {
     overflow: hidden;
 }
@@ -465,20 +466,16 @@ body.table-mode .player-1 {
     order: 3;
 }
 
-body.table-mode .player-2 {
-    order: 1;
-}
-
-body.table-mode .player-1 {
-    transform: rotate(180deg);
-}
-
 body.table-mode .player-1 .player-header {
     flex-direction: row-reverse;
 }
 
 body.table-mode .player-1 .player-name {
     text-align: right;
+}
+
+body.table-mode .player-2 {
+    order: 1;
 }
 
 body.table-mode .authority-value {
@@ -500,7 +497,7 @@ body.table-mode .history {
     display: none;
 }
 
-body.table-mode #tableModeBtn {
+body.table-mode .header-controls .btn-icon.active {
     background: rgba(0, 212, 255, 0.3);
     border-color: #00d4ff;
 }
