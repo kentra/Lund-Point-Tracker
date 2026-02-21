@@ -169,7 +169,7 @@
 
             useEffect(() => {
                 saveState();
-            }, [player1Authority, player2Authority, player1Score, player2Score, player1Name, player2Name, gameHistory, gameOver, tableMode, player1Rotation, player2Rotation]);
+            }, [player1Authority, player2Authority, player1Score, player2Score, player1Name, player2Name, gameHistory, gameOver, tableMode, player1Rotation, player2Rotation, lastMatchSummary]);
 
             useEffect(() => {
                 document.body.classList.toggle('table-mode', tableMode);
@@ -188,6 +188,7 @@
                     gameHistory,
                     gameOver,
                     tableMode,
+                    lastMatchSummary,
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             }
@@ -208,6 +209,7 @@
                         setGameHistory(state.gameHistory ?? []);
                         setGameOver(state.gameOver ?? false);
                         setTableMode(state.tableMode ?? false);
+                        setLastMatchSummary(state.lastMatchSummary ?? '');
                     } catch (e) {
                         console.error('Failed to load saved state:', e);
                     }
