@@ -206,19 +206,23 @@
                                         <span>{player1Score}</span> wins
                                     </div>
                                 </div>
-                                <div className="authority-display">
-                                    <div className={`authority-value ${getAuthorityClass(player1Authority)}`}>
-                                        {player1Authority}
+                                <div className="authority-area">
+                                    <div className="controls-damage">
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(1, -20)}>-20</button>
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(1, -10)}>-10</button>
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(1, -5)}>-5</button>
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(1, -1)}>-1</button>
                                     </div>
-                                    <div className="authority-label">AUTHORITY</div>
-                                </div>
-                                <div className="controls">
-                                    <button className="btn btn-damage" onClick={() => changeAuthority(1, -20)}>-20</button>
-                                    <button className="btn btn-damage" onClick={() => changeAuthority(1, -10)}>-10</button>
-                                    <button className="btn btn-damage" onClick={() => changeAuthority(1, -5)}>-5</button>
-                                    <button className="btn btn-damage" onClick={() => changeAuthority(1, -1)}>-1</button>
-                                    <button className="btn btn-heal" onClick={() => changeAuthority(1, 1)}>+1</button>
-                                    <button className="btn btn-heal" onClick={() => changeAuthority(1, 5)}>+5</button>
+                                    <div className="authority-display">
+                                        <div className={`authority-value ${getAuthorityClass(player1Authority)}`}>
+                                            {player1Authority}
+                                        </div>
+                                        <div className="authority-label">AUTHORITY</div>
+                                    </div>
+                                    <div className="controls-heal">
+                                        <button className="btn btn-heal" onClick={() => changeAuthority(1, 1)}>+1</button>
+                                        <button className="btn btn-heal" onClick={() => changeAuthority(1, 5)}>+5</button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -255,19 +259,23 @@
                                         <span>{player2Score}</span> wins
                                     </div>
                                 </div>
-                                <div className="authority-display">
-                                    <div className={`authority-value ${getAuthorityClass(player2Authority)}`}>
-                                        {player2Authority}
+                                <div className="authority-area">
+                                    <div className="controls-damage">
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(2, -20)}>-20</button>
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(2, -10)}>-10</button>
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(2, -5)}>-5</button>
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(2, -1)}>-1</button>
                                     </div>
-                                    <div className="authority-label">AUTHORITY</div>
-                                </div>
-                                <div className="controls">
-                                    <button className="btn btn-damage" onClick={() => changeAuthority(2, -20)}>-20</button>
-                                    <button className="btn btn-damage" onClick={() => changeAuthority(2, -10)}>-10</button>
-                                    <button className="btn btn-damage" onClick={() => changeAuthority(2, -5)}>-5</button>
-                                    <button className="btn btn-damage" onClick={() => changeAuthority(2, -1)}>-1</button>
-                                    <button className="btn btn-heal" onClick={() => changeAuthority(2, 1)}>+1</button>
-                                    <button className="btn btn-heal" onClick={() => changeAuthority(2, 5)}>+5</button>
+                                    <div className="authority-display">
+                                        <div className={`authority-value ${getAuthorityClass(player2Authority)}`}>
+                                            {player2Authority}
+                                        </div>
+                                        <div className="authority-label">AUTHORITY</div>
+                                    </div>
+                                    <div className="controls-heal">
+                                        <button className="btn btn-heal" onClick={() => changeAuthority(2, 1)}>+1</button>
+                                        <button className="btn btn-heal" onClick={() => changeAuthority(2, 5)}>+5</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

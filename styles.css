@@ -200,7 +200,10 @@ h1 {
 }
 
 .authority-display {
-    margin: 15px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .authority-value {
@@ -208,6 +211,28 @@ h1 {
     font-weight: bold;
     line-height: 1;
     transition: all 0.3s ease;
+}
+
+.authority-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.controls-damage {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 6px;
+}
+
+.controls-heal {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 6px;
 }
 
 .player-1 .authority-value {
@@ -248,13 +273,6 @@ h1 {
     color: #666688;
     margin-top: 5px;
     text-transform: uppercase;
-}
-
-.controls {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
-    margin-top: 15px;
 }
 
 .btn {
@@ -494,11 +512,17 @@ body.table-mode .authority-value {
     font-size: 8rem;
 }
 
-body.table-mode .controls {
-    position: absolute;
-    bottom: 15px;
-    left: 10px;
-    right: 10px;
+body.table-mode .authority-area {
+    gap: 30px;
+}
+
+body.table-mode .controls-damage,
+body.table-mode .controls-heal {
+    gap: 8px;
+}
+
+body.table-mode .btn {
+    padding: 16px 12px;
 }
 
 body.table-mode .menu-panel {
@@ -533,7 +557,8 @@ body.table-mode .header-controls .btn-icon.active {
         font-size: 5rem;
     }
     
-    .controls {
+    .controls-damage,
+    .controls-heal {
         gap: 4px;
     }
     
