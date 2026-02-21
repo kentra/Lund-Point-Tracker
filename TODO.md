@@ -1,4 +1,11 @@
-Move the <header> tag and its contents <h1> and “header-controls” to be placed between “player1” and ”player2” so it is centered on the screen.
+        ReferenceError: useRef is not defined
+            App <http://127.0.0.1:6969/> line 3 > injectedScript:83
+            React 9
+        react-dom.production.min.js:121:178
+        Uncaught ReferenceError: useRef is not defined
+            App <http://127.0.0.1:6969/> line 3 > injectedScript:83
+            React 9
+        Inline Babel script:25:33
 
 # TODO
 
