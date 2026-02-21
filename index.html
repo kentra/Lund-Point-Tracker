@@ -4,79 +4,420 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Star Realms Point Tracker</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="stars"></div>
-    <div class="stars2"></div>
-    <div class="stars3"></div>
-    
-    <div class="container">
-        <header>
-            <h1>Star Realms</h1>
-            <div class="header-controls">
-                <button class="btn btn-icon" onclick="toggleTableMode()" id="tableModeBtn" title="Table Mode">📱</button>
-                <button class="btn btn-icon" onclick="toggleMenu()" title="Menu">⚙️</button>
-            </div>
-        </header>
-        
-        <div class="game-board" id="gameBoard">
-            <div class="player player-1" id="player1">
-                <div class="player-header">
-                    <input type="text" class="player-name" id="name1" value="Player 1" maxlength="12">
-                    <div class="score-mini"><span id="score1">0</span> wins</div>
-                </div>
-                <div class="authority-display">
-                    <div class="authority-value" id="authority1">50</div>
-                    <div class="authority-label">AUTHORITY</div>
-                </div>
-                <div class="controls">
-                    <button class="btn btn-damage" onclick="changeAuthority(1, -20)">-20</button>
-                    <button class="btn btn-damage" onclick="changeAuthority(1, -10)">-10</button>
-                    <button class="btn btn-damage" onclick="changeAuthority(1, -5)">-5</button>
-                    <button class="btn btn-damage" onclick="changeAuthority(1, -1)">-1</button>
-                    <button class="btn btn-heal" onclick="changeAuthority(1, 1)">+1</button>
-                    <button class="btn btn-heal" onclick="changeAuthority(1, 5)">+5</button>
-                </div>
-            </div>
-            
-            <div class="player player-2" id="player2">
-                <div class="player-header">
-                    <input type="text" class="player-name" id="name2" value="Player 2" maxlength="12">
-                    <div class="score-mini"><span id="score2">0</span> wins</div>
-                </div>
-                <div class="authority-display">
-                    <div class="authority-value" id="authority2">50</div>
-                    <div class="authority-label">AUTHORITY</div>
-                </div>
-                <div class="controls">
-                    <button class="btn btn-damage" onclick="changeAuthority(2, -20)">-20</button>
-                    <button class="btn btn-damage" onclick="changeAuthority(2, -10)">-10</button>
-                    <button class="btn btn-damage" onclick="changeAuthority(2, -5)">-5</button>
-                    <button class="btn btn-damage" onclick="changeAuthority(2, -1)">-1</button>
-                    <button class="btn btn-heal" onclick="changeAuthority(2, 1)">+1</button>
-                    <button class="btn btn-heal" onclick="changeAuthority(2, 5)">+5</button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="menu-panel" id="menuPanel">
-            <button class="btn btn-reset" onclick="resetGame()">New Game</button>
-            <button class="btn btn-small" onclick="resetScore()">Reset Score</button>
-            <div class="history">
-                <h3>Game History</h3>
-                <div id="historyList" class="history-list"></div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="victory-overlay" id="victoryOverlay">
-        <div class="victory-content">
-            <div class="victory-text" id="victoryText">Victory!</div>
-            <button class="btn btn-reset" onclick="closeVictoryAndReset()">New Game</button>
-        </div>
-    </div>
+    <div id="root"></div>
 
-    <script src="app.js"></script>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const STARTING_AUTHORITY = 50;
+        const STORAGE_KEY = 'starRealmsTracker';
+
+        function App() {
+            const [player1Authority, setPlayer1Authority] = useState(STARTING_AUTHORITY);
+            const [player2Authority, setPlayer2Authority] = useState(STARTING_AUTHORITY);
+            const [player1Score, setPlayer1Score] = useState(0);
+            const [player2Score, setPlayer2Score] = useState(0);
+            const [player1Name, setPlayer1Name] = useState('Player 1');
+            const [player2Name, setPlayer2Name] = useState('Player 2');
+            const [player1Rotation, setPlayer1Rotation] = useState(0);
+            const [player2Rotation, setPlayer2Rotation] = useState(0);
+            const [gameHistory, setGameHistory] = useState([]);
+            const [gameOver, setGameOver] = useState(false);
+            const [tableMode, setTableMode] = useState(false);
+            const [showMenu, setShowMenu] = useState(false);
+            const [winner, setWinner] = useState(null);
+            const [winnerAuthority, setWinnerAuthority] = useState(0);
+            const [videoKey, setVideoKey] = useState(0);
+            const [showVideo, setShowVideo] = useState(false);
+
+            const audioCtxRef = useRef(null);
+            const getAudioCtx = () => {
+                if (!audioCtxRef.current) {
+                    audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                return audioCtxRef.current;
+            };
+
+            function playLaserSound(amount) {
+                const audioCtx = getAudioCtx();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                
+                const intensity = Math.abs(amount);
+                const baseFreq = 1200 - (intensity * 30);
+                const duration = 0.1 + (intensity * 0.005);
+                
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + duration);
+                
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + duration);
+            }
+
+            function playWorkshopSound(amount) {
+                const audioCtx = getAudioCtx();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                
+                const isBig = amount >= 5;
+                const duration = isBig ? 0.4 : 0.25;
+                const clankDelay = isBig ? 0.08 : 0.05;
+                
+                const motorOsc = audioCtx.createOscillator();
+                const motorGain = audioCtx.createGain();
+                motorOsc.type = 'sine';
+                motorOsc.frequency.setValueAtTime(80, audioCtx.currentTime);
+                motorOsc.frequency.linearRampToValueAtTime(60, audioCtx.currentTime + duration);
+                motorGain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                motorGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
+                
+                motorOsc.connect(motorGain);
+                motorGain.connect(audioCtx.destination);
+                
+                const clankOsc = audioCtx.createOscillator();
+                const clankGain = audioCtx.createGain();
+                clankOsc.type = 'square';
+                clankOsc.frequency.setValueAtTime(300 + Math.random() * 100, audioCtx.currentTime + clankDelay);
+                clankGain.gain.setValueAtTime(0.15, audioCtx.currentTime + clankDelay);
+                clankGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + clankDelay + 0.08);
+                
+                clankOsc.connect(clankGain);
+                clankGain.connect(audioCtx.destination);
+                
+                motorOsc.start();
+                clankOsc.start(audioCtx.currentTime + clankDelay);
+                motorOsc.stop(audioCtx.currentTime + duration);
+                clankOsc.stop(audioCtx.currentTime + clankDelay + 0.1);
+            }
+
+            useEffect(() => {
+                loadState();
+            }, []);
+
+            useEffect(() => {
+                saveState();
+            }, [player1Authority, player2Authority, player1Score, player2Score, player1Name, player2Name, gameHistory, gameOver, tableMode, player1Rotation, player2Rotation]);
+
+            useEffect(() => {
+                document.body.classList.toggle('table-mode', tableMode);
+            }, [tableMode]);
+
+            function saveState() {
+                const state = {
+                    player1Authority,
+                    player2Authority,
+                    player1Score,
+                    player2Score,
+                    player1Name,
+                    player2Name,
+                    player1Rotation,
+                    player2Rotation,
+                    gameHistory,
+                    gameOver,
+                    tableMode,
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            }
+
+            function loadState() {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    try {
+                        const state = JSON.parse(saved);
+                        setPlayer1Authority(state.player1Authority ?? STARTING_AUTHORITY);
+                        setPlayer2Authority(state.player2Authority ?? STARTING_AUTHORITY);
+                        setPlayer1Score(state.player1Score ?? 0);
+                        setPlayer2Score(state.player2Score ?? 0);
+                        setPlayer1Name(state.player1Name ?? 'Player 1');
+                        setPlayer2Name(state.player2Name ?? 'Player 2');
+                        setPlayer1Rotation(state.player1Rotation ?? 0);
+                        setPlayer2Rotation(state.player2Rotation ?? 0);
+                        setGameHistory(state.gameHistory ?? []);
+                        setGameOver(state.gameOver ?? false);
+                        setTableMode(state.tableMode ?? false);
+                    } catch (e) {
+                        console.error('Failed to load saved state:', e);
+                    }
+                }
+            }
+
+            function changeAuthority(player, amount) {
+                if (gameOver && amount < 0) return;
+
+                if (amount < 0) {
+                    playLaserSound(amount);
+                } else if (amount > 0) {
+                    playWorkshopSound(amount);
+                }
+
+                const name = player === 1 ? player1Name : player2Name;
+
+                if (player === 1) {
+                    const newValue = Math.max(0, player1Authority + amount);
+                    setPlayer1Authority(newValue);
+                    addHistory(`${name}: ${amount < 0 ? amount : '+' + amount}`, 1);
+
+                    if (newValue <= 0) {
+                        endGame(2);
+                    }
+                } else {
+                    const newValue = Math.max(0, player2Authority + amount);
+                    setPlayer2Authority(newValue);
+                    addHistory(`${name}: ${amount < 0 ? amount : '+' + amount}`, 2);
+
+                    if (newValue <= 0) {
+                        endGame(1);
+                    }
+                }
+            }
+
+            function addHistory(message, player) {
+                const item = {
+                    message,
+                    player,
+                    time: new Date().toLocaleTimeString(),
+                };
+                setGameHistory(prev => {
+                    const newHistory = [item, ...prev];
+                    if (newHistory.length > 30) {
+                        newHistory.pop();
+                    }
+                    return newHistory;
+                });
+            }
+
+            function endGame(winnerNum) {
+                setGameOver(true);
+                const winnerName = winnerNum === 1 ? player1Name : player2Name;
+                const winnerAuth = winnerNum === 1 ? player1Authority : player2Authority;
+
+                if (winnerNum === 1) {
+                    setPlayer1Score(prev => prev + 1);
+                } else {
+                    setPlayer2Score(prev => prev + 1);
+                }
+
+                addHistory(`${winnerName} wins!`, winnerNum);
+                setWinner(winnerName);
+                setWinnerAuthority(winnerAuth);
+                setVideoKey(prev => prev + 1);
+                setShowVideo(true);
+            }
+
+            function getVictoryMessage(winnerName, authority) {
+                if (authority >= 50) return `${winnerName} dominated.`;
+                if (authority >= 40) return `${winnerName} was superior.`;
+                if (authority >= 30) return `${winnerName} is victorious.`;
+                if (authority >= 20) return `${winnerName} won that one.`;
+                if (authority >= 10) return `${winnerName} got lucky.`;
+                return `${winnerName} vant på fett håret.`;
+            }
+
+            function resetGame() {
+                setPlayer1Authority(STARTING_AUTHORITY);
+                setPlayer2Authority(STARTING_AUTHORITY);
+                setGameOver(false);
+                setWinner(null);
+                setWinnerAuthority(0);
+                setShowVideo(false);
+                addHistory('--- New Game ---', 0);
+            }
+
+            function resetScore() {
+                setPlayer1Score(0);
+                setPlayer2Score(0);
+            }
+
+            function toggleTableMode() {
+                setTableMode(prev => !prev);
+            }
+
+            function toggleMenu() {
+                setShowMenu(prev => !prev);
+            }
+
+            function rotatePlayer(player) {
+                if (player === 1) {
+                    setPlayer1Rotation(prev => (prev + 90) % 360);
+                } else {
+                    setPlayer2Rotation(prev => (prev + 90) % 360);
+                }
+            }
+
+            function closeVictoryAndReset() {
+                setWinner(null);
+                resetGame();
+            }
+
+            function getAuthorityClass(value) {
+                if (value <= 10) return 'danger';
+                if (value <= 20) return 'warning';
+                return '';
+            }
+
+            return (
+                <>
+                    <div className="container">
+                        <div className="game-board">
+                            <div 
+                                className={`player player-1 ${gameOver ? 'defeated' : ''}`}
+                                style={{ transform: `rotate(${player1Rotation}deg)` }}
+                            >
+                                <div className="player-header">
+                                    <button 
+                                        className="btn btn-rotate" 
+                                        onClick={() => rotatePlayer(1)}
+                                        title="Rotate 90°"
+                                    >↻</button>
+                                    <input
+                                        type="text"
+                                        className="player-name"
+                                        value={player1Name}
+                                        onChange={(e) => setPlayer1Name(e.target.value)}
+                                        maxLength={12}
+                                    />
+                                    <div className="score-mini">
+                                        <span>{player1Score}</span> wins
+                                    </div>
+                                </div>
+                                <div className="authority-area">
+                                    <div className="controls-damage">
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(1, -20)}>-20</button>
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(1, -10)}>-10</button>
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(1, -5)}>-5</button>
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(1, -1)}>-1</button>
+                                    </div>
+                                    <div className="authority-display">
+                                        <div className={`authority-value ${getAuthorityClass(player1Authority)}`}>
+                                            {player1Authority}
+                                        </div>
+                                        <div className="authority-label">AUTHORITY</div>
+                                    </div>
+                                    <div className="controls-heal">
+                                        <button className="btn btn-heal" onClick={() => changeAuthority(1, 1)}>+1</button>
+                                        <button className="btn btn-heal" onClick={() => changeAuthority(1, 5)}>+5</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <header>
+                                <h1>Star Realms</h1>
+                                <div className="header-controls">
+                                    <button
+                                        className={`btn btn-icon ${tableMode ? 'active' : ''}`}
+                                        onClick={toggleTableMode}
+                                        title="Table Mode"
+                                    >📱</button>
+                                    <button className="btn btn-icon" onClick={toggleMenu} title="Menu">⚙️</button>
+                                </div>
+                            </header>
+
+                            <div 
+                                className={`player player-2 ${gameOver ? 'defeated' : ''}`}
+                                style={{ transform: `rotate(${player2Rotation}deg)` }}
+                            >
+                                <div className="player-header">
+                                    <button 
+                                        className="btn btn-rotate" 
+                                        onClick={() => rotatePlayer(2)}
+                                        title="Rotate 90°"
+                                    >↻</button>
+                                    <input
+                                        type="text"
+                                        className="player-name"
+                                        value={player2Name}
+                                        onChange={(e) => setPlayer2Name(e.target.value)}
+                                        maxLength={12}
+                                    />
+                                    <div className="score-mini">
+                                        <span>{player2Score}</span> wins
+                                    </div>
+                                </div>
+                                <div className="authority-area">
+                                    <div className="controls-damage">
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(2, -20)}>-20</button>
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(2, -10)}>-10</button>
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(2, -5)}>-5</button>
+                                        <button className="btn btn-damage" onClick={() => changeAuthority(2, -1)}>-1</button>
+                                    </div>
+                                    <div className="authority-display">
+                                        <div className={`authority-value ${getAuthorityClass(player2Authority)}`}>
+                                            {player2Authority}
+                                        </div>
+                                        <div className="authority-label">AUTHORITY</div>
+                                    </div>
+                                    <div className="controls-heal">
+                                        <button className="btn btn-heal" onClick={() => changeAuthority(2, 1)}>+1</button>
+                                        <button className="btn btn-heal" onClick={() => changeAuthority(2, 5)}>+5</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={`menu-panel ${showMenu ? 'show' : ''}`}>
+                            <button className="btn btn-reset" onClick={resetGame}>New Game</button>
+                            <button className="btn btn-small" onClick={resetScore}>Reset Score</button>
+                            <div className="history">
+                                <h3>Game History</h3>
+                                <div className="history-list">
+                                    {gameHistory.map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className={`history-item ${
+                                                item.player === 1 ? 'player-1-action' :
+                                                item.player === 2 ? 'player-2-action' : ''
+                                            }`}
+                                        >
+                                            <span>{item.message}</span>
+                                            <span>{item.time}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={`victory-overlay ${winner ? 'show' : ''}`}>
+                        {showVideo && (
+                            <video 
+                                className="explosion-video"
+                                autoPlay
+                                playsInline
+                                key={videoKey}
+                            >
+                                <source src="Spaceship_Explosion_GIF_Generation.mp4" type="video/mp4" />
+                            </video>
+                        )}
+                        <div className="victory-content">
+                            <div className="victory-text">{winner ? getVictoryMessage(winner, winnerAuthority) : ''}</div>
+                            <button className="btn btn-reset" onClick={closeVictoryAndReset}>New Game</button>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>

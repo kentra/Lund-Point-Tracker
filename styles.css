@@ -7,71 +7,15 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(to bottom, #0a0a20, #1a1a40, #0a0a20);
+    background-image: url('simple/Images/4_.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     min-height: 100vh;
     color: #fff;
     overflow-x: hidden;
     touch-action: manipulation;
-}
-
-.stars, .stars2, .stars3 {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-}
-
-.stars::before {
-    content: '';
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background: white;
-    box-shadow: 
-        100px 50px #fff, 200px 150px #fff, 300px 80px #fff, 400px 200px #fff,
-        50px 100px #fff, 150px 300px #fff, 250px 250px #fff, 350px 350px #fff,
-        450px 100px #fff, 550px 400px #fff, 650px 250px #fff, 750px 150px #fff,
-        850px 350px #fff, 950px 50px #fff, 1050px 200px #fff, 1150px 300px #fff,
-        1250px 100px #fff, 1350px 400px #fff, 100px 450px #fff, 200px 550px #fff,
-        300px 650px #fff, 400px 500px #fff, 500px 600px #fff, 600px 450px #fff,
-        700px 550px #fff, 800px 650px #fff, 900px 500px #fff, 1000px 600px #fff;
-    animation: twinkle 4s infinite;
-}
-
-.stars2::before {
-    content: '';
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.7);
-    box-shadow: 
-        120px 70px #fff, 220px 170px #fff, 320px 100px #fff, 420px 220px #fff,
-        70px 120px #fff, 170px 320px #fff, 270px 270px #fff, 370px 370px #fff,
-        470px 120px #fff, 570px 420px #fff, 670px 270px #fff, 770px 170px #fff,
-        870px 370px #fff, 970px 70px #fff, 1070px 220px #fff, 1170px 320px #fff,
-        1270px 120px #fff, 1370px 420px #fff;
-    animation: twinkle 6s infinite 2s;
-}
-
-.stars3::before {
-    content: '';
-    position: absolute;
-    width: 1.5px;
-    height: 1.5px;
-    background: rgba(200, 200, 255, 0.8);
-    box-shadow: 
-        80px 90px #ccf, 180px 190px #ccf, 280px 120px #ccf, 380px 240px #ccf,
-        130px 140px #ccf, 230px 340px #ccf, 330px 290px #ccf, 430px 390px #ccf,
-        530px 140px #ccf, 630px 440px #ccf, 730px 290px #ccf, 830px 190px #ccf,
-        930px 390px #ccf, 1030px 90px #ccf, 1130px 240px #ccf, 1230px 340px #ccf;
-    animation: twinkle 5s infinite 1s;
-}
-
-@keyframes twinkle {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
 }
 
 .container {
@@ -88,6 +32,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 10px 5px;
+    order: -1;
 }
 
 h1 {
@@ -102,8 +47,8 @@ h1 {
 }
 
 .btn-icon {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid #333355;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(51, 51, 85, 0.5);
     border-radius: 8px;
     padding: 8px 12px;
     font-size: 1.2rem;
@@ -113,6 +58,17 @@ h1 {
 .btn-icon.active {
     background: rgba(0, 212, 255, 0.3);
     border-color: #00d4ff;
+}
+
+.btn-rotate {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #333355;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #aaaacc;
+    line-height: 1;
 }
 
 .game-board {
@@ -146,6 +102,7 @@ h1 {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+    gap: 8px;
     padding: 0 5px;
 }
 
@@ -183,7 +140,10 @@ h1 {
 }
 
 .authority-display {
-    margin: 15px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .authority-value {
@@ -191,6 +151,28 @@ h1 {
     font-weight: bold;
     line-height: 1;
     transition: all 0.3s ease;
+}
+
+.authority-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.controls-damage {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 6px;
+}
+
+.controls-heal {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 6px;
 }
 
 .player-1 .authority-value {
@@ -231,13 +213,6 @@ h1 {
     color: #666688;
     margin-top: 5px;
     text-transform: uppercase;
-}
-
-.controls {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
-    margin-top: 15px;
 }
 
 .btn {
@@ -350,11 +325,28 @@ h1 {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.95);
+    background: #000;
     display: none;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    overflow: hidden;
+}
+
+.explosion-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+    animation: video-fade 8s forwards;
+}
+
+@keyframes video-fade {
+    0%, 62.5% { opacity: 1; }
+    100% { opacity: 0; }
 }
 
 .victory-overlay.show {
@@ -384,16 +376,28 @@ h1 {
     margin-bottom: 30px;
     text-transform: uppercase;
     letter-spacing: 3px;
-    background: linear-gradient(to right, #ff4444, #ffff00, #44ff44, #4444ff, #ff44ff);
+    background: linear-gradient(90deg, #00ffff, #ff00ff, #00ffff);
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: rainbow 2s infinite;
+    animation: plasma 2s linear infinite, glow-pulse 1.5s ease-in-out infinite;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.8)) drop-shadow(0 0 40px rgba(0, 255, 255, 0.6));
 }
 
-@keyframes rainbow {
-    0% { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(360deg); }
+@keyframes plasma {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
+@keyframes glow-pulse {
+    0%, 100% { 
+        filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.8)) drop-shadow(0 0 40px rgba(0, 255, 255, 0.6));
+    }
+    50% { 
+        filter: drop-shadow(0 0 30px rgba(255, 0, 255, 1)) drop-shadow(0 0 60px rgba(0, 255, 255, 0.9));
+    }
 }
 
 .player.defeated {
@@ -413,7 +417,7 @@ h1 {
     80% { transform: translateX(10px); }
 }
 
-/* Table Mode - For head-to-head play across a table */
+/* Table Mode */
 body.table-mode {
     overflow: hidden;
 }
@@ -424,54 +428,42 @@ body.table-mode .container {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    position: relative;
 }
 
 body.table-mode header {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 100;
     background: rgba(10, 10, 32, 0.95);
     padding: 8px 20px;
     border-radius: 10px;
     border: 1px solid #333355;
+    order: 2;
+    margin: auto 0;
 }
 
 body.table-mode h1 {
     font-size: 1rem;
 }
 
-body.table-mode .player-1 {
-    z-index: 150;
-}
-
-body.table-mode .player-2 {
-    z-index: 50;
-}
-
 body.table-mode .game-board {
-    flex: 1;
     margin: 0;
     gap: 0;
     display: flex;
     flex-direction: column;
-    padding: 20px 0;
+    flex: 1;
 }
 
 body.table-mode .player {
-    flex: 1;
+    background: linear-gradient(145deg, rgba(30, 30, 60, 0.5), rgba(20, 20, 40, 0.5));
     border-radius: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
     padding: 20px;
-    max-height: calc(50% - 35px);
+    flex: 1;
 }
 
 body.table-mode .player-1 {
     transform: rotate(180deg);
+    order: 3;
 }
 
 body.table-mode .player-1 .player-header {
@@ -482,15 +474,25 @@ body.table-mode .player-1 .player-name {
     text-align: right;
 }
 
+body.table-mode .player-2 {
+    order: 1;
+}
+
 body.table-mode .authority-value {
     font-size: 8rem;
 }
 
-body.table-mode .controls {
-    position: absolute;
-    bottom: 15px;
-    left: 10px;
-    right: 10px;
+body.table-mode .authority-area {
+    gap: 30px;
+}
+
+body.table-mode .controls-damage,
+body.table-mode .controls-heal {
+    gap: 8px;
+}
+
+body.table-mode .btn {
+    padding: 16px 12px;
 }
 
 body.table-mode .menu-panel {
@@ -501,7 +503,7 @@ body.table-mode .history {
     display: none;
 }
 
-body.table-mode #tableModeBtn {
+body.table-mode .header-controls .btn-icon.active {
     background: rgba(0, 212, 255, 0.3);
     border-color: #00d4ff;
 }
@@ -525,7 +527,8 @@ body.table-mode #tableModeBtn {
         font-size: 5rem;
     }
     
-    .controls {
+    .controls-damage,
+    .controls-heal {
         gap: 4px;
     }
     
