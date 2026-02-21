@@ -38,6 +38,7 @@
             const [showVideo, setShowVideo] = useState(false);
 
             const audioCtxRef = useRef(null);
+            const newGameAudioRef = useRef(null);
             const getAudioCtx = () => {
                 if (!audioCtxRef.current) {
                     audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -233,6 +234,10 @@
             }
 
             function resetGame() {
+                if (newGameAudioRef.current) {
+                    newGameAudioRef.current.currentTime = 0;
+                    newGameAudioRef.current.play();
+                }
                 setPlayer1Authority(STARTING_AUTHORITY);
                 setPlayer2Authority(STARTING_AUTHORITY);
                 setGameOver(false);
@@ -276,6 +281,7 @@
 
             return (
                 <>
+                    <audio ref={newGameAudioRef} src="simple/Sound/_O.wav" preload="auto" />
                     <div className="container">
                         <div className="game-board">
                             <div 
