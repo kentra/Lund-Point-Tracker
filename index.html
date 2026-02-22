@@ -42,6 +42,15 @@
             const [player1HighestHeal, setPlayer1HighestHeal] = useState(0);
             const [player2HighestHeal, setPlayer2HighestHeal] = useState(0);
             const [gameStartTime, setGameStartTime] = useState(null);
+            const [lastPlayer, setLastPlayer] = useState(0);
+            const [player1CurrentTurnDamage, setPlayer1CurrentTurnDamage] = useState(0);
+            const [player2CurrentTurnDamage, setPlayer2CurrentTurnDamage] = useState(0);
+            const [player1CurrentTurnHeal, setPlayer1CurrentTurnHeal] = useState(0);
+            const [player2CurrentTurnHeal, setPlayer2CurrentTurnHeal] = useState(0);
+            const [player1HighestTurnDamage, setPlayer1HighestTurnDamage] = useState(0);
+            const [player2HighestTurnDamage, setPlayer2HighestTurnDamage] = useState(0);
+            const [player1HighestTurnHeal, setPlayer1HighestTurnHeal] = useState(0);
+            const [player2HighestTurnHeal, setPlayer2HighestTurnHeal] = useState(0);
 
             const audioCtxRef = useRef(null);
             const newGameAudioRef = useRef(null);
@@ -169,7 +178,7 @@
 
             useEffect(() => {
                 saveState();
-            }, [player1Authority, player2Authority, player1Score, player2Score, player1Name, player2Name, gameHistory, gameOver, tableMode, player1Rotation, player2Rotation, lastMatchSummary]);
+            }, [player1Authority, player2Authority, player1Score, player2Score, player1Name, player2Name, gameHistory, gameOver, tableMode, player1Rotation, player2Rotation, lastMatchSummary, lastPlayer, player1CurrentTurnDamage, player2CurrentTurnDamage, player1CurrentTurnHeal, player2CurrentTurnHeal, player1HighestTurnDamage, player2HighestTurnDamage, player1HighestTurnHeal, player2HighestTurnHeal]);
 
             useEffect(() => {
                 document.body.classList.toggle('table-mode', tableMode);
@@ -189,6 +198,15 @@
                     gameOver,
                     tableMode,
                     lastMatchSummary,
+                    lastPlayer,
+                    player1CurrentTurnDamage,
+                    player2CurrentTurnDamage,
+                    player1CurrentTurnHeal,
+                    player2CurrentTurnHeal,
+                    player1HighestTurnDamage,
+                    player2HighestTurnDamage,
+                    player1HighestTurnHeal,
+                    player2HighestTurnHeal,
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             }
@@ -210,6 +228,15 @@
                         setGameOver(state.gameOver ?? false);
                         setTableMode(state.tableMode ?? false);
                         setLastMatchSummary(state.lastMatchSummary ?? '');
+                        setLastPlayer(state.lastPlayer ?? 0);
+                        setPlayer1CurrentTurnDamage(state.player1CurrentTurnDamage ?? 0);
+                        setPlayer2CurrentTurnDamage(state.player2CurrentTurnDamage ?? 0);
+                        setPlayer1CurrentTurnHeal(state.player1CurrentTurnHeal ?? 0);
+                        setPlayer2CurrentTurnHeal(state.player2CurrentTurnHeal ?? 0);
+                        setPlayer1HighestTurnDamage(state.player1HighestTurnDamage ?? 0);
+                        setPlayer2HighestTurnDamage(state.player2HighestTurnDamage ?? 0);
+                        setPlayer1HighestTurnHeal(state.player1HighestTurnHeal ?? 0);
+                        setPlayer2HighestTurnHeal(state.player2HighestTurnHeal ?? 0);
                     } catch (e) {
                         console.error('Failed to load saved state:', e);
                     }
@@ -227,18 +254,48 @@
                     playLaserSound(amount);
                     const damage = Math.abs(amount);
                     if (player === 1) {
+                        if (lastPlayer !== 1 && lastPlayer !== 0) {
+                            setPlayer1HighestTurnDamage(prev => Math.max(prev, player1CurrentTurnDamage));
+                            setPlayer1HighestTurnHeal(prev => Math.max(prev, player1CurrentTurnHeal));
+                            setPlayer1CurrentTurnDamage(0);
+                            setPlayer1CurrentTurnHeal(0);
+                        }
+                        setPlayer1CurrentTurnDamage(prev => prev + damage);
                         setPlayer1HighestDamage(prev => Math.max(prev, damage));
                     } else {
+                        if (lastPlayer !== 2 && lastPlayer !== 0) {
+                            setPlayer2HighestTurnDamage(prev => Math.max(prev, player2CurrentTurnDamage));
+                            setPlayer2HighestTurnHeal(prev => Math.max(prev, player2CurrentTurnHeal));
+                            setPlayer2CurrentTurnDamage(0);
+                            setPlayer2CurrentTurnHeal(0);
+                        }
+                        setPlayer2CurrentTurnDamage(prev => prev + damage);
                         setPlayer2HighestDamage(prev => Math.max(prev, damage));
                     }
                 } else if (amount > 0) {
                     playWorkshopSound(amount);
                     if (player === 1) {
+                        if (lastPlayer !== 1 && lastPlayer !== 0) {
+                            setPlayer1HighestTurnDamage(prev => Math.max(prev, player1CurrentTurnDamage));
+                            setPlayer1HighestTurnHeal(prev => Math.max(prev, player1CurrentTurnHeal));
+                            setPlayer1CurrentTurnDamage(0);
+                            setPlayer1CurrentTurnHeal(0);
+                        }
+                        setPlayer1CurrentTurnHeal(prev => prev + amount);
                         setPlayer1HighestHeal(prev => Math.max(prev, amount));
                     } else {
+                        if (lastPlayer !== 2 && lastPlayer !== 0) {
+                            setPlayer2HighestTurnDamage(prev => Math.max(prev, player2CurrentTurnDamage));
+                            setPlayer2HighestTurnHeal(prev => Math.max(prev, player2CurrentTurnHeal));
+                            setPlayer2CurrentTurnDamage(0);
+                            setPlayer2CurrentTurnHeal(0);
+                        }
+                        setPlayer2CurrentTurnHeal(prev => prev + amount);
                         setPlayer2HighestHeal(prev => Math.max(prev, amount));
                     }
                 }
+
+                setLastPlayer(player);
 
                 const name = player === 1 ? player1Name : player2Name;
 
@@ -287,12 +344,25 @@
                 const seconds = duration % 60;
                 const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
                 
-                const winnerHighestDamage = winnerNum === 1 ? player1HighestDamage : player2HighestDamage;
-                const loserHighestDamage = winnerNum === 1 ? player2HighestDamage : player1HighestDamage;
-                const winnerHighestHeal = winnerNum === 1 ? player1HighestHeal : player2HighestHeal;
-                const loserHighestHeal = winnerNum === 1 ? player2HighestHeal : player1HighestHeal;
+                const finalWinnerTurnDamage = winnerNum === 1 ? player1CurrentTurnDamage : player2CurrentTurnDamage;
+                const finalLoserTurnDamage = winnerNum === 1 ? player2CurrentTurnDamage : player1CurrentTurnDamage;
+                const finalWinnerTurnHeal = winnerNum === 1 ? player1CurrentTurnHeal : player2CurrentTurnHeal;
+                const finalLoserTurnHeal = winnerNum === 1 ? player2CurrentTurnHeal : player1CurrentTurnHeal;
                 
-                const summary = generateMatchSummary(winnerName, winnerAuth, loserName, winnerHighestDamage, loserHighestDamage, winnerHighestHeal, loserHighestHeal, timeStr);
+                const winnerHighestTurnDamage = winnerNum === 1 
+                    ? Math.max(player1HighestTurnDamage, player1CurrentTurnDamage) 
+                    : Math.max(player2HighestTurnDamage, player2CurrentTurnDamage);
+                const loserHighestTurnDamage = winnerNum === 1 
+                    ? Math.max(player2HighestTurnDamage, player2CurrentTurnDamage) 
+                    : Math.max(player1HighestTurnDamage, player1CurrentTurnDamage);
+                const winnerHighestTurnHeal = winnerNum === 1 
+                    ? Math.max(player1HighestTurnHeal, player1CurrentTurnHeal) 
+                    : Math.max(player2HighestTurnHeal, player2CurrentTurnHeal);
+                const loserHighestTurnHeal = winnerNum === 1 
+                    ? Math.max(player2HighestTurnHeal, player2CurrentTurnHeal) 
+                    : Math.max(player1HighestTurnHeal, player1CurrentTurnHeal);
+                
+                const summary = generateMatchSummary(winnerName, winnerAuth, loserName, winnerHighestTurnDamage, loserHighestTurnDamage, winnerHighestTurnHeal, loserHighestTurnHeal, timeStr);
                 setLastMatchSummary(summary);
 
                 if (winnerNum === 1) {
@@ -311,6 +381,15 @@
                 setPlayer2HighestDamage(0);
                 setPlayer1HighestHeal(0);
                 setPlayer2HighestHeal(0);
+                setPlayer1CurrentTurnDamage(0);
+                setPlayer2CurrentTurnDamage(0);
+                setPlayer1CurrentTurnHeal(0);
+                setPlayer2CurrentTurnHeal(0);
+                setPlayer1HighestTurnDamage(0);
+                setPlayer2HighestTurnDamage(0);
+                setPlayer1HighestTurnHeal(0);
+                setPlayer2HighestTurnHeal(0);
+                setLastPlayer(0);
                 setGameStartTime(null);
             }
 
@@ -350,6 +429,16 @@
                 setWinner(null);
                 setWinnerAuthority(0);
                 setShowVideo(false);
+                setPlayer1CurrentTurnDamage(0);
+                setPlayer2CurrentTurnDamage(0);
+                setPlayer1CurrentTurnHeal(0);
+                setPlayer2CurrentTurnHeal(0);
+                setPlayer1HighestTurnDamage(0);
+                setPlayer2HighestTurnDamage(0);
+                setPlayer1HighestTurnHeal(0);
+                setPlayer2HighestTurnHeal(0);
+                setLastPlayer(0);
+                setGameStartTime(null);
                 addHistory('--- New Game ---', 0);
             }
 
