@@ -132,6 +132,111 @@ h1 {
     50% { opacity: 0.6; }
 }
 
+.shield-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.shield-popup {
+    background: linear-gradient(145deg, rgba(30, 30, 60, 0.95), rgba(20, 20, 40, 0.95));
+    border: 2px solid #4444ff;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 0 30px rgba(68, 68, 255, 0.4);
+    text-align: center;
+    min-width: 280px;
+}
+
+.shield-popup-title {
+    color: #aaaacc;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+.shield-popup-value {
+    background: #1a1a2e;
+    border: 2px solid #333355;
+    border-radius: 8px;
+    color: #00ff00;
+    font-size: 3rem;
+    font-weight: bold;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.shield-popup-numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn-num {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #333355;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1.5rem;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-num:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #4444ff;
+}
+
+.btn-num:active {
+    transform: scale(0.95);
+}
+
+.btn-clear {
+    color: #ff6666;
+}
+
+.btn-confirm {
+    background: rgba(0, 255, 0, 0.2);
+    border-color: #00ff00;
+    color: #00ff00;
+}
+
+.btn-confirm:hover {
+    background: rgba(0, 255, 0, 0.3);
+}
+
+.btn-cancel {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #555577;
+    border-radius: 8px;
+    color: #aaaacc;
+    font-size: 1rem;
+    padding: 10px 30px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #ff4444;
+    color: #ff6666;
+}
+
 .game-board {
     display: flex;
     flex-direction: column;

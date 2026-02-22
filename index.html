@@ -59,6 +59,10 @@
             const [player2PendingDamage, setPlayer2PendingDamage] = useState(0);
             const [player1PendingHeal, setPlayer1PendingHeal] = useState(0);
             const [player2PendingHeal, setPlayer2PendingHeal] = useState(0);
+            const [showShieldPopup, setShowShieldPopup] = useState(false);
+            const [shieldPopupPlayer, setShieldPopupPlayer] = useState(0);
+            const [shieldPopupIndex, setShieldPopupIndex] = useState(0);
+            const [shieldPopupValue, setShieldPopupValue] = useState('0');
 
             const player1TimerRef = useRef(null);
             const player2TimerRef = useRef(null);
@@ -490,47 +494,11 @@
             }
 
             function setShield(player, shieldIndex) {
-                const input = prompt('Enter shield value (0-10):');
-                const value = parseInt(input, 10);
-                if (isNaN(value) || value < 0 || value > 10) return;
-                
-                const name = player === 1 ? player1Name : player2Name;
-                
-                if (player === 1) {
-                    setPlayer1Shields(prev => {
-                        const wasActive = prev[shieldIndex] > 0;
-                        const newShields = [...prev];
-                        newShields[shieldIndex] = value;
-                        if (value > 0 && !wasActive) {
-                            setPlayer1ActiveShields(active => {
-                                const newActive = [...active];
-                                newActive[shieldIndex] = true;
-                                return newActive;
-                            });
-                        }
-                        if (value > 0) {
-                            addHistory(`${name}: Shield ${shieldIndex + 1} = ${value}`, 1);
-                        }
-                        return newShields;
-                    });
-                } else {
-                    setPlayer2Shields(prev => {
-                        const wasActive = prev[shieldIndex] > 0;
-                        const newShields = [...prev];
-                        newShields[shieldIndex] = value;
-                        if (value > 0 && !wasActive) {
-                            setPlayer2ActiveShields(active => {
-                                const newActive = [...active];
-                                newActive[shieldIndex] = true;
-                                return newActive;
-                            });
-                        }
-                        if (value > 0) {
-                            addHistory(`${name}: Shield ${shieldIndex + 1} = ${value}`, 2);
-                        }
-                        return newShields;
-                    });
-                }
+                const currentValue = player === 1 ? player1Shields[shieldIndex] : player2Shields[shieldIndex];
+                setShieldPopupPlayer(player);
+                setShieldPopupIndex(shieldIndex);
+                setShieldPopupValue(currentValue.toString());
+                setShowShieldPopup(true);
             }
 
             function deliverAccumulatedDamage(player, amount) {
@@ -837,6 +805,89 @@
                             <button className="btn btn-reset" onClick={closeVictoryAndReset}>New Game</button>
                         </div>
                     </div>
+
+                    {showShieldPopup && (
+                        <div className="shield-popup-overlay" onClick={() => setShowShieldPopup(false)}>
+                            <div className="shield-popup" onClick={e => e.stopPropagation()}>
+                                <div className="shield-popup-title">
+                                    Set Shield {shieldPopupIndex + 1} - Player {shieldPopupPlayer}
+                                </div>
+                                <div className="shield-popup-value">{shieldPopupValue}</div>
+                                <div className="shield-popup-numpad">
+                                    {['7', '8', '9', '4', '5', '6', '1', '2', '3'].map(num => (
+                                        <button 
+                                            key={num}
+                                            className="btn btn-num"
+                                            onClick={() => {
+                                                const newVal = shieldPopupValue === '0' ? num : shieldPopupValue + num;
+                                                const intVal = parseInt(newVal, 10);
+                                                if (intVal <= 10) setShieldPopupValue(intVal.toString());
+                                            }}
+                                        >{num}</button>
+                                    ))}
+                                    <button 
+                                        className="btn btn-num btn-clear"
+                                        onClick={() => setShieldPopupValue('0')}
+                                    >C</button>
+                                    <button 
+                                        className="btn btn-num"
+                                        onClick={() => {
+                                            const newVal = shieldPopupValue === '0' ? '0' : shieldPopupValue + '0';
+                                            const intVal = parseInt(newVal, 10);
+                                            if (intVal <= 10) setShieldPopupValue(intVal.toString());
+                                        }}
+                                    >0</button>
+                                    <button 
+                                        className="btn btn-num btn-confirm"
+                                        onClick={() => {
+                                            const value = parseInt(shieldPopupValue, 10) || 0;
+                                            if (shieldPopupPlayer === 1) {
+                                                setPlayer1Shields(prev => {
+                                                    const newShields = [...prev];
+                                                    const wasActive = prev[shieldPopupIndex] > 0;
+                                                    newShields[shieldPopupIndex] = value;
+                                                    if (value > 0 && !wasActive) {
+                                                        setPlayer1ActiveShields(active => {
+                                                            const newActive = [...active];
+                                                            newActive[shieldPopupIndex] = true;
+                                                            return newActive;
+                                                        });
+                                                    }
+                                                    return newShields;
+                                                });
+                                                if (value > 0) {
+                                                    addHistory(`${player1Name}: Shield ${shieldPopupIndex + 1} = ${value}`, 1);
+                                                }
+                                            } else {
+                                                setPlayer2Shields(prev => {
+                                                    const newShields = [...prev];
+                                                    const wasActive = prev[shieldPopupIndex] > 0;
+                                                    newShields[shieldPopupIndex] = value;
+                                                    if (value > 0 && !wasActive) {
+                                                        setPlayer2ActiveShields(active => {
+                                                            const newActive = [...active];
+                                                            newActive[shieldPopupIndex] = true;
+                                                            return newActive;
+                                                        });
+                                                    }
+                                                    return newShields;
+                                                });
+                                                if (value > 0) {
+                                                    addHistory(`${player2Name}: Shield ${shieldPopupIndex + 1} = ${value}`, 2);
+                                                }
+                                            }
+                                            setShowShieldPopup(false);
+                                            setShieldPopupValue('0');
+                                        }}
+                                    >✓</button>
+                                </div>
+                                <button className="btn btn-cancel" onClick={() => {
+                                    setShowShieldPopup(false);
+                                    setShieldPopupValue('0');
+                                }}>Cancel</button>
+                            </div>
+                        </div>
+                    )}
                 </>
             );
         }
