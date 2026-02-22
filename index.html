@@ -51,6 +51,8 @@
             const [player2HighestTurnDamage, setPlayer2HighestTurnDamage] = useState(0);
             const [player1HighestTurnHeal, setPlayer1HighestTurnHeal] = useState(0);
             const [player2HighestTurnHeal, setPlayer2HighestTurnHeal] = useState(0);
+            const [player1Shields, setPlayer1Shields] = useState([0, 0, 0, 0]);
+            const [player2Shields, setPlayer2Shields] = useState([0, 0, 0, 0]);
 
             const audioCtxRef = useRef(null);
             const newGameAudioRef = useRef(null);
@@ -178,7 +180,7 @@
 
             useEffect(() => {
                 saveState();
-            }, [player1Authority, player2Authority, player1Score, player2Score, player1Name, player2Name, gameHistory, gameOver, tableMode, player1Rotation, player2Rotation, lastMatchSummary, lastPlayer, player1CurrentTurnDamage, player2CurrentTurnDamage, player1CurrentTurnHeal, player2CurrentTurnHeal, player1HighestTurnDamage, player2HighestTurnDamage, player1HighestTurnHeal, player2HighestTurnHeal]);
+            }, [player1Authority, player2Authority, player1Score, player2Score, player1Name, player2Name, gameHistory, gameOver, tableMode, player1Rotation, player2Rotation, lastMatchSummary, lastPlayer, player1CurrentTurnDamage, player2CurrentTurnDamage, player1CurrentTurnHeal, player2CurrentTurnHeal, player1HighestTurnDamage, player2HighestTurnDamage, player1HighestTurnHeal, player2HighestTurnHeal, player1Shields, player2Shields]);
 
             useEffect(() => {
                 document.body.classList.toggle('table-mode', tableMode);
@@ -207,6 +209,8 @@
                     player2HighestTurnDamage,
                     player1HighestTurnHeal,
                     player2HighestTurnHeal,
+                    player1Shields,
+                    player2Shields,
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             }
@@ -237,6 +241,8 @@
                         setPlayer2HighestTurnDamage(state.player2HighestTurnDamage ?? 0);
                         setPlayer1HighestTurnHeal(state.player1HighestTurnHeal ?? 0);
                         setPlayer2HighestTurnHeal(state.player2HighestTurnHeal ?? 0);
+                        setPlayer1Shields(state.player1Shields ?? [0, 0, 0, 0]);
+                        setPlayer2Shields(state.player2Shields ?? [0, 0, 0, 0]);
                     } catch (e) {
                         console.error('Failed to load saved state:', e);
                     }
@@ -250,11 +256,35 @@
                     setGameStartTime(Date.now());
                 }
 
+                let remainingDamage = 0;
+                let shieldsToUpdate = [];
+
                 if (amount < 0) {
                     playLaserSound(amount);
                     const damage = Math.abs(amount);
                     const otherPlayer = player === 1 ? 2 : 1;
+                    const currentShields = player === 1 ? player1Shields : player2Shields;
+                    
+                    let currentDamage = damage;
+                    const newShields = [...currentShields];
+                    
+                    while (currentDamage > 0) {
+                        const eligibleShields = newShields
+                            .map((v, i) => ({ value: v, index: i }))
+                            .filter(s => s.value > 0 && s.value <= currentDamage);
+                        
+                        if (eligibleShields.length === 0) break;
+                        
+                        const highest = eligibleShields.reduce((max, s) => s.value > max.value ? s : max, eligibleShields[0]);
+                        currentDamage -= highest.value;
+                        newShields[highest.index] = 0;
+                    }
+                    
+                    remainingDamage = currentDamage;
+                    shieldsToUpdate = newShields;
+                    
                     if (player === 1) {
+                        setPlayer1Shields(newShields);
                         if (lastPlayer !== 1 && lastPlayer !== 0) {
                             setPlayer2HighestTurnDamage(prev => Math.max(prev, player2CurrentTurnDamage));
                             setPlayer2HighestTurnHeal(prev => Math.max(prev, player2CurrentTurnHeal));
@@ -264,6 +294,7 @@
                         setPlayer2CurrentTurnDamage(prev => prev + damage);
                         setPlayer1HighestDamage(prev => Math.max(prev, damage));
                     } else {
+                        setPlayer2Shields(newShields);
                         if (lastPlayer !== 2 && lastPlayer !== 0) {
                             setPlayer1HighestTurnDamage(prev => Math.max(prev, player1CurrentTurnDamage));
                             setPlayer1HighestTurnHeal(prev => Math.max(prev, player1CurrentTurnHeal));
@@ -300,18 +331,20 @@
 
                 const name = player === 1 ? player1Name : player2Name;
 
+                const finalAmount = amount < 0 ? -remainingDamage : amount;
+
                 if (player === 1) {
-                    const newValue = Math.max(0, player1Authority + amount);
+                    const newValue = Math.max(0, player1Authority + finalAmount);
                     setPlayer1Authority(newValue);
-                    addHistory(`${name}: ${amount < 0 ? amount : '+' + amount}`, 1);
+                    addHistory(`${name}: ${finalAmount < 0 ? finalAmount : '+' + finalAmount}`, 1);
 
                     if (newValue <= 0) {
                         endGame(2);
                     }
                 } else {
-                    const newValue = Math.max(0, player2Authority + amount);
+                    const newValue = Math.max(0, player2Authority + finalAmount);
                     setPlayer2Authority(newValue);
-                    addHistory(`${name}: ${amount < 0 ? amount : '+' + amount}`, 2);
+                    addHistory(`${name}: ${finalAmount < 0 ? finalAmount : '+' + finalAmount}`, 2);
 
                     if (newValue <= 0) {
                         endGame(1);
@@ -438,6 +471,8 @@
                 setPlayer2HighestTurnDamage(0);
                 setPlayer1HighestTurnHeal(0);
                 setPlayer2HighestTurnHeal(0);
+                setPlayer1Shields([0, 0, 0, 0]);
+                setPlayer2Shields([0, 0, 0, 0]);
                 setLastPlayer(0);
                 setGameStartTime(null);
                 addHistory('--- New Game ---', 0);
@@ -475,6 +510,26 @@
                 return '';
             }
 
+            function setShield(player, shieldIndex) {
+                const input = prompt('Enter shield value (0-50):');
+                const value = parseInt(input, 10);
+                if (isNaN(value) || value < 0 || value > 50) return;
+                
+                if (player === 1) {
+                    setPlayer1Shields(prev => {
+                        const newShields = [...prev];
+                        newShields[shieldIndex] = value;
+                        return newShields;
+                    });
+                } else {
+                    setPlayer2Shields(prev => {
+                        const newShields = [...prev];
+                        newShields[shieldIndex] = value;
+                        return newShields;
+                    });
+                }
+            }
+
             return (
                 <>
                     <audio ref={newGameAudioRef} src="simple/Sound/_O.wav" preload="auto" />
@@ -497,6 +552,16 @@
                                         onClick={() => rotatePlayer(1)}
                                         title="Rotate 90°"
                                     >↻</button>
+                                    <div className="shields">
+                                        {[0, 1, 2, 3].map(i => (
+                                            <button 
+                                                key={i}
+                                                className={`btn btn-shield ${player1Shields[i] > 0 ? 'active' : ''}`}
+                                                onClick={() => setShield(1, i)}
+                                                title={`Shield ${i + 1}`}
+                                            >{player1Shields[i] > 0 ? player1Shields[i] : '🛡️'}</button>
+                                        ))}
+                                    </div>
                                     <input
                                         type="text"
                                         className="player-name"
@@ -556,6 +621,16 @@
                                         onClick={() => rotatePlayer(2)}
                                         title="Rotate 90°"
                                     >↻</button>
+                                    <div className="shields">
+                                        {[0, 1, 2, 3].map(i => (
+                                            <button 
+                                                key={i}
+                                                className={`btn btn-shield ${player2Shields[i] > 0 ? 'active' : ''}`}
+                                                onClick={() => setShield(2, i)}
+                                                title={`Shield ${i + 1}`}
+                                            >{player2Shields[i] > 0 ? player2Shields[i] : '🛡️'}</button>
+                                        ))}
+                                    </div>
                                     <input
                                         type="text"
                                         className="player-name"
