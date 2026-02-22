@@ -395,19 +395,81 @@
             }
 
             function generateMatchSummary(winnerName, winnerAuth, loserName, winnerDmg, loserDmg, winnerHeal, loserHeal, timeStr) {
-                let msg = "";
+                const dominantWins = [
+                    `${winnerName} ANNIHILATED ${loserName} with ${winnerDmg} damage! ${winnerName} healed ${winnerHeal} - ${loserName} never stood a chance!`,
+                    `${winnerName} OBLITERATED ${loserName}! ${winnerDmg} damage combo crushed all resistance! ${winnerName} is unstoppable!`,
+                    `${winnerName} DESTROYED ${loserName} with a ${winnerDmg} damage masterstroke! Healed ${winnerHeal} for maximum dominance!`,
+                    `${winnerName} MASSACRED ${loserName} - ${winnerDmg} damage overkill! ${loserName}'s ${loserDmg} damage was pitiful! ${winnerName} IS A LEGEND!`,
+                    `${winnerName} CRUSHED ${loserName} with ${winnerDmg} damage fury! Healed ${winnerHeal} - total domination in ${timeStr}!`,
+                    `${winnerName} ANNIHILATED ${loserName}! ${winnerDmg} damage blow shattered all hope! ${loserName} embarrassed as always!`,
+                    `${winnerName} OBLITERATED ${loserName} with ${winnerDmg} damage carnage! ${winnerName} healed ${winnerHeal} - pure destruction!`,
+                    `${winnerName} DEMOLISHED ${loserName} - ${winnerDmg} damage devastation! ${loserName} should quit right now!`,
+                ];
                 
+                const solidWins = [
+                    `${winnerName} DOMINATED ${loserName} with ${winnerDmg} damage! ${winnerName} healed ${winnerHeal} - ${timeStr} of pure skill!`,
+                    `${winnerName} CRUSHED ${loserName} with ${winnerDmg} damage fireworks! ${winnerName} healed ${winnerHeal} - ${loserName} was outmatched!`,
+                    `${winnerName} DEMOLISHED ${loserName}! ${winnerDmg} damage combo sealed the deal - ${loserName} never stood a chance!`,
+                    `${winnerName} OVERPOWERED ${loserName} with ${winnerDmg} damage brilliance! Healed ${winnerHeal} in the ${timeStr} battle!`,
+                    `${winnerName} CRUSHED ${loserName}! ${winnerDmg} damage masterpiece - ${loserName} was simply outclassed!`,
+                    `${winnerName} DOMINATED the match with ${winnerDmg} damage! Healed ${winnerHeal} - ${loserName} needs way more practice!`,
+                    `${winnerName} SHREDDED ${loserName} with ${winnerDmg} damage fury! ${timeStr} match - ${loserName} was helpless!`,
+                    `${winnerName} WRECKED ${loserName} with ${winnerDmg} damage destruction! Healed ${winnerHeal} - total control!`,
+                ];
+                
+                const closeWins = [
+                    `${winnerName} SECURED the win against ${loserName} with ${winnerDmg} damage! ${winnerName} healed ${winnerHeal} - barely made it in ${timeStr}!`,
+                    `${winnerName} CLINCHED victory from ${loserName} with ${winnerDmg} damage! Healed ${winnerHeal} - ${timeStr} of intense battle!`,
+                    `${winnerName} EDGED OUT ${loserName} with ${winnerDmg} damage! ${winnerName} healed ${winnerHeal} in the ${timeStr} struggle!`,
+                    `${winnerName} PULLED OFF an incredible win! ${winnerDmg} damage finisher against ${loserName} - healed ${winnerHeal}!`,
+                    `${winnerName} SNATCHED victory from ${loserName}! ${winnerDmg} damage strike after healing ${winnerHeal} - so close!`,
+                    `${winnerName} SECURED the win with ${winnerDmg} damage! Healed ${winnerHeal} against ${loserName} in ${timeStr}!`,
+                    `${winnerName} GRINDED out a win against ${loserName}! ${winnerDmg} damage + ${winnerHeal} heal in ${timeStr}!`,
+                    `${winnerName} FOUGHT HARD and beat ${loserName}! ${winnerDmg} damage with ${winnerHeal} heal - earned victory!`,
+                ];
+                
+                const barelyWins = [
+                    `${winnerName} BARELY SURVIVED against ${loserName}! ${winnerDmg} damage on the final blow - ${winnerName} has NERVES OF STEEL!`,
+                    `${winnerName} SNEAKED past ${loserName} by ${winnerDmg} damage! Healed ${winnerHeal} - ${loserName} is crying now!`,
+                    `${winnerName} BARELY WON against ${loserName}! ${winnerDmg} damage clutch play after healing ${winnerHeal} - ${timeStr} of chaos!`,
+                    `${winnerName} SQUEAKED by ${loserName}! ${winnerDmg} damage thriller - healed ${winnerHeal} and survived by a thread!`,
+                    `${winnerName} MIRACULOUSLY beat ${loserName}! ${winnerDmg} damage + ${winnerHeal} heal - ${loserName} is devastated!`,
+                    `${winnerName} SURVIVED ${loserName}'s onslaught! ${winnerDmg} damage finisher with ${winnerHeal} heal - ${timeStr} of mayhem!`,
+                    `${winnerName} STOLE victory from ${loserName}! ${winnerDmg} damage after ${winnerHeal} heal - ${loserName} is heartbroken!`,
+                    `${winnerName} CLUNG ON for dear life and beat ${loserName}! ${winnerDmg} damage clincher - ${timeStr} of pure tension!`,
+                ];
+                
+                const losingComments = [
+                    `${loserName} should be embarrassed!`,
+                    `${loserName} was pathetic!`,
+                    `${loserName} needs much more practice!`,
+                    `${loserName} never stood a chance!`,
+                    `${loserName} was completely outmatched!`,
+                    `${loserName} was absolutely helpless!`,
+                    `${loserName} got destroyed!`,
+                    `${loserName} was crushed!`,
+                ];
+                
+                let templates;
                 if (winnerAuth >= 40) {
-                    msg = `${winnerName} DESTROYED ${loserName} with ${winnerDmg} damage on their best turn! ${winnerName} healed ${winnerHeal} at their best! Match lasted ${timeStr}! ${loserName} only managed ${loserDmg} damage - pathetic! ${winnerName} is a LEGEND! ${loserName} should be embarrassed!`;
+                    templates = dominantWins;
                 } else if (winnerAuth >= 25) {
-                    msg = `${winnerName} dominated with ${winnerDmg} damage combo! ${winnerName} healed ${winnerHeal} at peak! ${timeStr} match! ${loserName} only had ${loserDmg} damage - too weak! ${winnerName} wins! ${loserName} needs practice!`;
+                    templates = solidWins;
                 } else if (winnerAuth >= 10) {
-                    msg = `${winnerName} secured the win with ${winnerDmg} damage strike! ${winnerName} popped ${winnerHeal} heal! ${timeStr} battle! ${loserName} had ${loserDmg} damage - should have done more! ${winnerName} takes glory!`;
+                    templates = closeWins;
                 } else {
-                    msg = `${winnerName} BARELY SURVIVED with just ${winnerDmg} damage on the final blow! ${winnerName} healed ${winnerHeal} at their best! ${timeStr} of chaos! ${loserName} had ${loserDmg} damage - so close yet so far! ${winnerName} has NERVES OF STEEL!`;
+                    templates = barelyWins;
                 }
                 
-                return msg.substring(0, 300);
+                const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+                const randomComment = losingComments[Math.floor(Math.random() * losingComments.length)];
+                
+                let msg = randomTemplate;
+                if (loserDmg > 0 && winnerAuth < 40) {
+                    msg += ` ${randomComment}`;
+                }
+                
+                return msg.substring(0, 500);
             }
 
             function getVictoryMessage(winnerName, authority) {
