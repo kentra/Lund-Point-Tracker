@@ -1,0 +1,18 @@
+{
+    "name": "Star Realms Point Tracker",
+    "short_name": "Star Realms",
+    "description": "Track authority points in Star Realms tabletop card game",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#1a1a2e",
+    "theme_color": "#4444ff",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ]
+}
