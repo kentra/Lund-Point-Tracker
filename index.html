@@ -63,6 +63,7 @@
             const [shieldPopupPlayer, setShieldPopupPlayer] = useState(0);
             const [shieldPopupIndex, setShieldPopupIndex] = useState(0);
             const [shieldPopupValue, setShieldPopupValue] = useState('0');
+            const [showSummaryPopup, setShowSummaryPopup] = useState(false);
 
             const player1TimerRef = useRef(null);
             const player2TimerRef = useRef(null);
@@ -699,7 +700,7 @@
                                 <div className="header-controls">
                                     <button 
                                         className="btn btn-icon" 
-                                        onClick={() => alert(lastMatchSummary)}
+                                        onClick={() => setShowSummaryPopup(true)}
                                         title="Match Summary"
                                         disabled={!lastMatchSummary}
                                     >📢</button>
@@ -885,6 +886,16 @@
                                     setShowShieldPopup(false);
                                     setShieldPopupValue('0');
                                 }}>Cancel</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showSummaryPopup && (
+                        <div className="summary-popup-overlay" onClick={() => setShowSummaryPopup(false)}>
+                            <div className="summary-popup" onClick={e => e.stopPropagation()}>
+                                <div className="summary-popup-title">Match Summary</div>
+                                <div className="summary-popup-text">{lastMatchSummary}</div>
+                                <button className="btn btn-cancel" onClick={() => setShowSummaryPopup(false)}>Close</button>
                             </div>
                         </div>
                     )}

@@ -237,6 +237,48 @@ h1 {
     color: #ff6666;
 }
 
+.summary-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+.summary-popup {
+    background: linear-gradient(145deg, rgba(30, 30, 60, 0.95), rgba(20, 20, 40, 0.95));
+    border: 2px solid #4444ff;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 0 30px rgba(68, 68, 255, 0.4);
+    text-align: center;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.summary-popup-title {
+    color: #aaaacc;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(68, 68, 255, 0.5);
+}
+
+.summary-popup-text {
+    color: #ffffff;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    text-align: left;
+    white-space: pre-wrap;
+}
+
 .game-board {
     display: flex;
     flex-direction: column;
