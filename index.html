@@ -62,6 +62,8 @@
 
             const player1TimerRef = useRef(null);
             const player2TimerRef = useRef(null);
+            const player1PendingRef = useRef({ damage: 0, heal: 0 });
+            const player2PendingRef = useRef({ damage: 0, heal: 0 });
 
             const audioCtxRef = useRef(null);
             const newGameAudioRef = useRef(null);
@@ -266,18 +268,21 @@
                 if (gameOver && amount < 0) return;
 
                 const timerRef = player === 1 ? player1TimerRef : player2TimerRef;
+                const pendingRef = player === 1 ? player1PendingRef : player2PendingRef;
                 
                 if (timerRef.current) {
                     clearTimeout(timerRef.current);
                 }
 
                 if (amount < 0) {
+                    pendingRef.current.damage += Math.abs(amount);
                     if (player === 1) {
                         setPlayer1PendingDamage(prev => prev + Math.abs(amount));
                     } else {
                         setPlayer2PendingDamage(prev => prev + Math.abs(amount));
                     }
                 } else if (amount > 0) {
+                    pendingRef.current.heal += amount;
                     if (player === 1) {
                         setPlayer1PendingHeal(prev => prev + amount);
                     } else {
@@ -286,8 +291,9 @@
                 }
 
                 timerRef.current = setTimeout(() => {
-                    const pendingDamage = player === 1 ? player1PendingDamage : player2PendingDamage;
-                    const pendingHeal = player === 1 ? player1PendingHeal : player2PendingHeal;
+                    const pendingDamage = pendingRef.current.damage;
+                    const pendingHeal = pendingRef.current.heal;
+                    pendingRef.current = { damage: 0, heal: 0 };
                     
                     if (pendingDamage > 0) {
                         deliverAccumulatedDamage(player, -pendingDamage);
@@ -422,6 +428,8 @@
                     clearTimeout(player2TimerRef.current);
                     player2TimerRef.current = null;
                 }
+                player1PendingRef.current = { damage: 0, heal: 0 };
+                player2PendingRef.current = { damage: 0, heal: 0 };
                 setPlayer1Authority(STARTING_AUTHORITY);
                 setPlayer2Authority(STARTING_AUTHORITY);
                 setGameOver(false);
@@ -489,39 +497,39 @@
                 const name = player === 1 ? player1Name : player2Name;
                 
                 if (player === 1) {
-                    const wasActive = player1ActiveShields[shieldIndex];
                     setPlayer1Shields(prev => {
+                        const wasActive = prev[shieldIndex] > 0;
                         const newShields = [...prev];
                         newShields[shieldIndex] = value;
+                        if (value > 0 && !wasActive) {
+                            setPlayer1ActiveShields(active => {
+                                const newActive = [...active];
+                                newActive[shieldIndex] = true;
+                                return newActive;
+                            });
+                        }
+                        if (value > 0) {
+                            addHistory(`${name}: Shield ${shieldIndex + 1} = ${value}`, 1);
+                        }
                         return newShields;
                     });
-                    if (value > 0 && !wasActive) {
-                        setPlayer1ActiveShields(prev => {
-                            const newActive = [...prev];
-                            newActive[shieldIndex] = true;
-                            return newActive;
-                        });
-                    }
-                    if (value > 0) {
-                        addHistory(`${name}: Shield ${shieldIndex + 1} = ${value}`, 1);
-                    }
                 } else {
-                    const wasActive = player2ActiveShields[shieldIndex];
                     setPlayer2Shields(prev => {
+                        const wasActive = prev[shieldIndex] > 0;
                         const newShields = [...prev];
                         newShields[shieldIndex] = value;
+                        if (value > 0 && !wasActive) {
+                            setPlayer2ActiveShields(active => {
+                                const newActive = [...active];
+                                newActive[shieldIndex] = true;
+                                return newActive;
+                            });
+                        }
+                        if (value > 0) {
+                            addHistory(`${name}: Shield ${shieldIndex + 1} = ${value}`, 2);
+                        }
                         return newShields;
                     });
-                    if (value > 0 && !wasActive) {
-                        setPlayer2ActiveShields(prev => {
-                            const newActive = [...prev];
-                            newActive[shieldIndex] = true;
-                            return newActive;
-                        });
-                    }
-                    if (value > 0) {
-                        addHistory(`${name}: Shield ${shieldIndex + 1} = ${value}`, 2);
-                    }
                 }
             }
 
