@@ -331,7 +331,13 @@
 
                 const name = player === 1 ? player1Name : player2Name;
 
-                const finalAmount = amount < 0 ? -remainingDamage : amount;
+                const currentShields = player === 1 ? player1Shields : player2Shields;
+                const allShieldsInactive = currentShields.every(s => s === 0);
+                
+                let finalAmount = 0;
+                if (amount > 0 || allShieldsInactive) {
+                    finalAmount = amount < 0 ? -remainingDamage : amount;
+                }
 
                 if (player === 1) {
                     const newValue = Math.max(0, player1Authority + finalAmount);
