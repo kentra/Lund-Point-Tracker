@@ -55,6 +55,13 @@
             const [player2Shields, setPlayer2Shields] = useState([0, 0, 0, 0]);
             const [player1ActiveShields, setPlayer1ActiveShields] = useState([false, false, false, false]);
             const [player2ActiveShields, setPlayer2ActiveShields] = useState([false, false, false, false]);
+            const [player1PendingDamage, setPlayer1PendingDamage] = useState(0);
+            const [player2PendingDamage, setPlayer2PendingDamage] = useState(0);
+            const [player1PendingHeal, setPlayer1PendingHeal] = useState(0);
+            const [player2PendingHeal, setPlayer2PendingHeal] = useState(0);
+
+            const player1TimerRef = useRef(null);
+            const player2TimerRef = useRef(null);
 
             const audioCtxRef = useRef(null);
             const newGameAudioRef = useRef(null);
@@ -258,9 +265,39 @@
             function changeAuthority(player, amount) {
                 if (gameOver && amount < 0) return;
 
-                if (gameStartTime === null && amount < 0) {
-                    setGameStartTime(Date.now());
+                const timerRef = player === 1 ? player1TimerRef : player2TimerRef;
+                
+                if (timerRef.current) {
+                    clearTimeout(timerRef.current);
                 }
+
+                if (amount < 0) {
+                    if (player === 1) {
+                        setPlayer1PendingDamage(prev => prev + Math.abs(amount));
+                    } else {
+                        setPlayer2PendingDamage(prev => prev + Math.abs(amount));
+                    }
+                } else if (amount > 0) {
+                    if (player === 1) {
+                        setPlayer1PendingHeal(prev => prev + amount);
+                    } else {
+                        setPlayer2PendingHeal(prev => prev + amount);
+                    }
+                }
+
+                timerRef.current = setTimeout(() => {
+                    const pendingDamage = player === 1 ? player1PendingDamage : player2PendingDamage;
+                    const pendingHeal = player === 1 ? player1PendingHeal : player2PendingHeal;
+                    
+                    if (pendingDamage > 0) {
+                        deliverAccumulatedDamage(player, -pendingDamage);
+                    } else if (pendingHeal > 0) {
+                        deliverAccumulatedDamage(player, pendingHeal);
+                    }
+                    
+                    timerRef.current = null;
+                }, 750);
+            }
 
                 let remainingDamage = 0;
                 let shieldsToUpdate = [];
@@ -487,6 +524,14 @@
                     newGameAudioRef.current.currentTime = 0;
                     newGameAudioRef.current.play();
                 }
+                if (player1TimerRef.current) {
+                    clearTimeout(player1TimerRef.current);
+                    player1TimerRef.current = null;
+                }
+                if (player2TimerRef.current) {
+                    clearTimeout(player2TimerRef.current);
+                    player2TimerRef.current = null;
+                }
                 setPlayer1Authority(STARTING_AUTHORITY);
                 setPlayer2Authority(STARTING_AUTHORITY);
                 setGameOver(false);
@@ -505,6 +550,10 @@
                 setPlayer2Shields([0, 0, 0, 0]);
                 setPlayer1ActiveShields([false, false, false, false]);
                 setPlayer2ActiveShields([false, false, false, false]);
+                setPlayer1PendingDamage(0);
+                setPlayer2PendingDamage(0);
+                setPlayer1PendingHeal(0);
+                setPlayer2PendingHeal(0);
                 setLastPlayer(0);
                 setGameStartTime(null);
                 addHistory('--- New Game ---', 0);
@@ -586,6 +635,134 @@
                 }
             }
 
+            function deliverAccumulatedDamage(player, amount) {
+                if (amount === 0) return;
+                
+                if (gameStartTime === null && amount < 0) {
+                    setGameStartTime(Date.now());
+                }
+
+                let remainingDamage = 0;
+                let shieldsToUpdate = [];
+                let destroyedShields = [];
+
+                if (amount < 0) {
+                    playLaserSound(amount);
+                    const damage = Math.abs(amount);
+                    const currentShields = player === 1 ? player1Shields : player2Shields;
+                    
+                    let currentDamage = damage;
+                    const newShields = [...currentShields];
+                    
+                    while (currentDamage > 0) {
+                        const eligibleShields = newShields
+                            .map((v, i) => ({ value: v, index: i }))
+                            .filter(s => s.value > 0 && s.value <= currentDamage);
+                        
+                        if (eligibleShields.length === 0) break;
+                        
+                        const highest = eligibleShields.reduce((max, s) => s.value > max.value ? s : max, eligibleShields[0]);
+                        destroyedShields.push({ index: highest.index, value: highest.value });
+                        currentDamage -= highest.value;
+                        newShields[highest.index] = 0;
+                    }
+                    
+                    remainingDamage = currentDamage;
+                    shieldsToUpdate = newShields;
+                    
+                    if (player === 1) {
+                        setPlayer1Shields(newShields);
+                        if (lastPlayer !== 1 && lastPlayer !== 0) {
+                            setPlayer2HighestTurnDamage(prev => Math.max(prev, player2CurrentTurnDamage));
+                            setPlayer2HighestTurnHeal(prev => Math.max(prev, player2CurrentTurnHeal));
+                            setPlayer2CurrentTurnDamage(0);
+                            setPlayer2CurrentTurnHeal(0);
+                        }
+                        setPlayer2CurrentTurnDamage(prev => prev + damage);
+                        setPlayer1HighestDamage(prev => Math.max(prev, damage));
+                    } else {
+                        setPlayer2Shields(newShields);
+                        if (lastPlayer !== 2 && lastPlayer !== 0) {
+                            setPlayer1HighestTurnDamage(prev => Math.max(prev, player1CurrentTurnDamage));
+                            setPlayer1HighestTurnHeal(prev => Math.max(prev, player1CurrentTurnHeal));
+                            setPlayer1CurrentTurnDamage(0);
+                            setPlayer1CurrentTurnHeal(0);
+                        }
+                        setPlayer1CurrentTurnDamage(prev => prev + damage);
+                        setPlayer2HighestDamage(prev => Math.max(prev, damage));
+                    }
+                } else if (amount > 0) {
+                    playWorkshopSound(amount);
+                    if (player === 1) {
+                        if (lastPlayer !== 1 && lastPlayer !== 0) {
+                            setPlayer1HighestTurnDamage(prev => Math.max(prev, player1CurrentTurnDamage));
+                            setPlayer1HighestTurnHeal(prev => Math.max(prev, player1CurrentTurnHeal));
+                            setPlayer1CurrentTurnDamage(0);
+                            setPlayer1CurrentTurnHeal(0);
+                        }
+                        setPlayer1CurrentTurnHeal(prev => prev + amount);
+                        setPlayer1HighestHeal(prev => Math.max(prev, amount));
+                    } else {
+                        if (lastPlayer !== 2 && lastPlayer !== 0) {
+                            setPlayer2HighestTurnDamage(prev => Math.max(prev, player2CurrentTurnDamage));
+                            setPlayer2HighestTurnHeal(prev => Math.max(prev, player2CurrentTurnHeal));
+                            setPlayer2CurrentTurnDamage(0);
+                            setPlayer2CurrentTurnHeal(0);
+                        }
+                        setPlayer2CurrentTurnHeal(prev => prev + amount);
+                        setPlayer2HighestHeal(prev => Math.max(prev, amount));
+                    }
+                }
+
+                if (player === 1) {
+                    setPlayer1PendingDamage(0);
+                    setPlayer1PendingHeal(0);
+                } else {
+                    setPlayer2PendingDamage(0);
+                    setPlayer2PendingHeal(0);
+                }
+
+                const shieldsToCheck = shieldsToUpdate.length > 0 ? shieldsToUpdate : (player === 1 ? player1Shields : player2Shields);
+                const allShieldsInactive = shieldsToCheck.every(s => s === 0);
+                
+                let finalAmount = 0;
+                if (amount > 0 || allShieldsInactive) {
+                    finalAmount = amount < 0 ? -remainingDamage : amount;
+                }
+
+                destroyedShields.forEach(shield => {
+                    const playerName = player === 1 ? player2Name : player1Name;
+                    const historyPlayer = player === 1 ? 2 : 1;
+                    addHistory(`${playerName}: Shield ${shield.index + 1} blocked ${shield.value} damage`, historyPlayer);
+                });
+
+                setLastPlayer(player);
+
+                const name = player === 1 ? player1Name : player2Name;
+
+                if (player === 1) {
+                    const newValue = Math.max(0, player1Authority + finalAmount);
+                    setPlayer1Authority(newValue);
+                    if (finalAmount !== 0) {
+                        addHistory(`${name}: ${finalAmount < 0 ? finalAmount : '+' + finalAmount}`, 1);
+                    }
+
+                    if (newValue <= 0) {
+                        endGame(2);
+                    }
+                } else {
+                    const newValue = Math.max(0, player2Authority + finalAmount);
+                    setPlayer2Authority(newValue);
+                    if (finalAmount !== 0) {
+                        addHistory(`${name}: ${finalAmount < 0 ? finalAmount : '+' + finalAmount}`, 2);
+                    }
+
+                    if (newValue <= 0) {
+                        endGame(1);
+                    }
+                }
+            }
+
             return (
                 <>
                     <audio ref={newGameAudioRef} src="simple/Sound/_O.wav" preload="auto" />
@@ -618,6 +795,8 @@
                                             >{player1Shields[i] > 0 ? player1Shields[i] : '🛡️'}</button>
                                         ))}
                                     </div>
+                                    {player1PendingDamage > 0 && <div className="pending-damage">Pending: -{player1PendingDamage}</div>}
+                                    {player1PendingHeal > 0 && <div className="pending-heal">Pending: +{player1PendingHeal}</div>}
                                     <input
                                         type="text"
                                         className="player-name"
@@ -687,6 +866,8 @@
                                             >{player2Shields[i] > 0 ? player2Shields[i] : '🛡️'}</button>
                                         ))}
                                     </div>
+                                    {player2PendingDamage > 0 && <div className="pending-damage">Pending: -{player2PendingDamage}</div>}
+                                    {player2PendingHeal > 0 && <div className="pending-heal">Pending: +{player2PendingHeal}</div>}
                                     <input
                                         type="text"
                                         className="player-name"
