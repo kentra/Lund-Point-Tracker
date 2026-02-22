@@ -468,7 +468,7 @@ body.table-mode .player {
 
 body.table-mode .player-1 {
     transform: rotate(180deg);
-    order: 3;
+    order: 1;
 }
 
 body.table-mode .player-1 .player-header {
@@ -480,7 +480,7 @@ body.table-mode .player-1 .player-name {
 }
 
 body.table-mode .player-2 {
-    order: 1;
+    order: 3;
 }
 
 body.table-mode .authority-value {
