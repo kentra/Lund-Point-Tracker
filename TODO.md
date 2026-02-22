@@ -1,23 +1,15 @@
-        # Live Announcer logic
-        if gemini_client and tts_client:
-            # Trigger if damage >= 10 OR if player is eliminated
-            if log_data["amount_changed"] <= -10 or log_data["new_score"] <= 0:
-                try:
-                    event_context = f"A player named {log_data['player_name']} just took {abs(log_data['amount_changed'])} damage, bringing their score to {log_data['new_score']}."
-                    if log_data["new_score"] <= 0:
-                        event_context += " They have been eliminated!"
+## 1. Project Overview
 
-                    prompt = f"You are a foul and spitefull Ship AI tracking and commenting a space battle. {event_context} Write a single, short, urgent warning sentence announcing this."
+**Authority Tracker** is a mobile-first web application designed as a one-to-four person authority/point tracker for board games, specifically themed around the *Star Realms* card game.
+The application is built on fastapi-fullstack, utilising WebSocket Streaming, SQLite, redis and taskiq.
+For frontend it is using  Next.js 15(React 19 + TypeScript + Tailwind CSS v4) with Dark Mode + i18n.
 
-                    response = gemini_client.models.generate_content(
-                        model="gemini-2.5-flash",
-                        contents=prompt,
-                    )
+### Key Features
 
-                    if response.text:
-                        generate_and_emit_audio(response.text)
-                except Exception as e:
-                    print(f"Error generating Live Announcer: {e}")
+- Supports 1 to 4 players.
+- Mobile-first, responsive layouts (e.g., top player view is inverted for 2 players sitting across).
+- Built-in history showing rapid point changes (+/- animations).
+- Themed to match Star Realms factions (Blob, Trade Federation, Star Empire, Machine Cult).
 
 # TODO
 

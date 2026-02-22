@@ -253,23 +253,24 @@
                 if (amount < 0) {
                     playLaserSound(amount);
                     const damage = Math.abs(amount);
+                    const otherPlayer = player === 1 ? 2 : 1;
                     if (player === 1) {
                         if (lastPlayer !== 1 && lastPlayer !== 0) {
-                            setPlayer1HighestTurnDamage(prev => Math.max(prev, player1CurrentTurnDamage));
-                            setPlayer1HighestTurnHeal(prev => Math.max(prev, player1CurrentTurnHeal));
-                            setPlayer1CurrentTurnDamage(0);
-                            setPlayer1CurrentTurnHeal(0);
-                        }
-                        setPlayer1CurrentTurnDamage(prev => prev + damage);
-                        setPlayer1HighestDamage(prev => Math.max(prev, damage));
-                    } else {
-                        if (lastPlayer !== 2 && lastPlayer !== 0) {
                             setPlayer2HighestTurnDamage(prev => Math.max(prev, player2CurrentTurnDamage));
                             setPlayer2HighestTurnHeal(prev => Math.max(prev, player2CurrentTurnHeal));
                             setPlayer2CurrentTurnDamage(0);
                             setPlayer2CurrentTurnHeal(0);
                         }
                         setPlayer2CurrentTurnDamage(prev => prev + damage);
+                        setPlayer1HighestDamage(prev => Math.max(prev, damage));
+                    } else {
+                        if (lastPlayer !== 2 && lastPlayer !== 0) {
+                            setPlayer1HighestTurnDamage(prev => Math.max(prev, player1CurrentTurnDamage));
+                            setPlayer1HighestTurnHeal(prev => Math.max(prev, player1CurrentTurnHeal));
+                            setPlayer1CurrentTurnDamage(0);
+                            setPlayer1CurrentTurnHeal(0);
+                        }
+                        setPlayer1CurrentTurnDamage(prev => prev + damage);
                         setPlayer2HighestDamage(prev => Math.max(prev, damage));
                     }
                 } else if (amount > 0) {
