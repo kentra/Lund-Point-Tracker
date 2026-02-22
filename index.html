@@ -53,6 +53,8 @@
             const [player2HighestTurnHeal, setPlayer2HighestTurnHeal] = useState(0);
             const [player1Shields, setPlayer1Shields] = useState([0, 0, 0, 0]);
             const [player2Shields, setPlayer2Shields] = useState([0, 0, 0, 0]);
+            const [player1ActiveShields, setPlayer1ActiveShields] = useState([false, false, false, false]);
+            const [player2ActiveShields, setPlayer2ActiveShields] = useState([false, false, false, false]);
 
             const audioCtxRef = useRef(null);
             const newGameAudioRef = useRef(null);
@@ -180,7 +182,7 @@
 
             useEffect(() => {
                 saveState();
-            }, [player1Authority, player2Authority, player1Score, player2Score, player1Name, player2Name, gameHistory, gameOver, tableMode, player1Rotation, player2Rotation, lastMatchSummary, lastPlayer, player1CurrentTurnDamage, player2CurrentTurnDamage, player1CurrentTurnHeal, player2CurrentTurnHeal, player1HighestTurnDamage, player2HighestTurnDamage, player1HighestTurnHeal, player2HighestTurnHeal, player1Shields, player2Shields]);
+            }, [player1Authority, player2Authority, player1Score, player2Score, player1Name, player2Name, gameHistory, gameOver, tableMode, player1Rotation, player2Rotation, lastMatchSummary, lastPlayer, player1CurrentTurnDamage, player2CurrentTurnDamage, player1CurrentTurnHeal, player2CurrentTurnHeal, player1HighestTurnDamage, player2HighestTurnDamage, player1HighestTurnHeal, player2HighestTurnHeal, player1Shields, player2Shields, player1ActiveShields, player2ActiveShields]);
 
             useEffect(() => {
                 document.body.classList.toggle('table-mode', tableMode);
@@ -211,6 +213,8 @@
                     player2HighestTurnHeal,
                     player1Shields,
                     player2Shields,
+                    player1ActiveShields,
+                    player2ActiveShields,
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
             }
@@ -243,6 +247,8 @@
                         setPlayer2HighestTurnHeal(state.player2HighestTurnHeal ?? 0);
                         setPlayer1Shields(state.player1Shields ?? [0, 0, 0, 0]);
                         setPlayer2Shields(state.player2Shields ?? [0, 0, 0, 0]);
+                        setPlayer1ActiveShields(state.player1ActiveShields ?? [false, false, false, false]);
+                        setPlayer2ActiveShields(state.player2ActiveShields ?? [false, false, false, false]);
                     } catch (e) {
                         console.error('Failed to load saved state:', e);
                     }
@@ -258,6 +264,7 @@
 
                 let remainingDamage = 0;
                 let shieldsToUpdate = [];
+                let destroyedShields = [];
 
                 if (amount < 0) {
                     playLaserSound(amount);
@@ -276,6 +283,7 @@
                         if (eligibleShields.length === 0) break;
                         
                         const highest = eligibleShields.reduce((max, s) => s.value > max.value ? s : max, eligibleShields[0]);
+                        destroyedShields.push({ index: highest.index, value: highest.value });
                         currentDamage -= highest.value;
                         newShields[highest.index] = 0;
                     }
@@ -331,13 +339,19 @@
 
                 const name = player === 1 ? player1Name : player2Name;
 
-                const currentShields = player === 1 ? player1Shields : player2Shields;
-                const allShieldsInactive = currentShields.every(s => s === 0);
+                const shieldsToCheck = shieldsToUpdate.length > 0 ? shieldsToUpdate : (player === 1 ? player1Shields : player2Shields);
+                const allShieldsInactive = shieldsToCheck.every(s => s === 0);
                 
                 let finalAmount = 0;
                 if (amount > 0 || allShieldsInactive) {
                     finalAmount = amount < 0 ? -remainingDamage : amount;
                 }
+
+                destroyedShields.forEach(shield => {
+                    const playerName = player === 1 ? player2Name : player1Name;
+                    const historyPlayer = player === 1 ? 2 : 1;
+                    addHistory(`${playerName}: Shield ${shield.index + 1} blocked ${shield.value} damage`, historyPlayer);
+                });
 
                 if (player === 1) {
                     const newValue = Math.max(0, player1Authority + finalAmount);
@@ -402,7 +416,14 @@
                     ? Math.max(player2HighestTurnHeal, player2CurrentTurnHeal) 
                     : Math.max(player1HighestTurnHeal, player1CurrentTurnHeal);
                 
-                const summary = generateMatchSummary(winnerName, winnerAuth, loserName, winnerHighestTurnDamage, loserHighestTurnDamage, winnerHighestTurnHeal, loserHighestTurnHeal, timeStr);
+                const winnerActiveShields = winnerNum === 1 
+                    ? player1ActiveShields.filter(s => s).length 
+                    : player2ActiveShields.filter(s => s).length;
+                const loserActiveShields = winnerNum === 1 
+                    ? player2ActiveShields.filter(s => s).length 
+                    : player1ActiveShields.filter(s => s).length;
+                
+                const summary = generateMatchSummary(winnerName, winnerAuth, loserName, winnerHighestTurnDamage, loserHighestTurnDamage, winnerHighestTurnHeal, loserHighestTurnHeal, timeStr, winnerActiveShields, loserActiveShields);
                 setLastMatchSummary(summary);
 
                 if (winnerNum === 1) {
@@ -433,20 +454,23 @@
                 setGameStartTime(null);
             }
 
-            function generateMatchSummary(winnerName, winnerAuth, loserName, winnerDmg, loserDmg, winnerHeal, loserHeal, timeStr) {
+            function generateMatchSummary(winnerName, winnerAuth, loserName, winnerDmg, loserDmg, winnerHeal, loserHeal, timeStr, winnerActiveShields, loserActiveShields) {
                 let msg = "";
                 
+                const winnerShieldMsg = winnerActiveShields > 0 ? `${winnerName} activated ${winnerActiveShields} shield${winnerActiveShields > 1 ? 's' : ''}! ` : '';
+                const loserShieldMsg = loserActiveShields > 0 ? `${loserName} had ${loserActiveShields} active shield${loserActiveShields > 1 ? 's' : ''}. ` : '';
+                
                 if (winnerAuth >= 40) {
-                    msg = `${winnerName} DESTROYED ${loserName} with ${winnerDmg} damage on their best turn! ${winnerName} healed ${winnerHeal} at their best! Match lasted ${timeStr}! ${loserName} only managed ${loserDmg} damage - pathetic! ${winnerName} is a LEGEND! ${loserName} should be embarrassed!`;
+                    msg = `${winnerShieldMsg}${winnerName} DESTROYED ${loserName} with ${winnerDmg} damage on their best turn! ${winnerName} healed ${winnerHeal} at their best! Match lasted ${timeStr}! ${loserShieldMsg}${loserName} only managed ${loserDmg} damage - pathetic! ${winnerName} is a LEGEND! ${loserName} should be embarrassed!`;
                 } else if (winnerAuth >= 25) {
-                    msg = `${winnerName} dominated with ${winnerDmg} damage combo! ${winnerName} healed ${winnerHeal} at peak! ${timeStr} match! ${loserName} only had ${loserDmg} damage - too weak! ${winnerName} wins! ${loserName} needs practice!`;
+                    msg = `${winnerShieldMsg}${winnerName} dominated with ${winnerDmg} damage combo! ${winnerName} healed ${winnerHeal} at peak! ${timeStr} match! ${loserShieldMsg}${loserName} only had ${loserDmg} damage - too weak! ${winnerName} wins! ${loserName} needs practice!`;
                 } else if (winnerAuth >= 10) {
-                    msg = `${winnerName} secured the win with ${winnerDmg} damage strike! ${winnerName} popped ${winnerHeal} heal! ${timeStr} battle! ${loserName} had ${loserDmg} damage - should have done more! ${winnerName} takes glory!`;
+                    msg = `${winnerShieldMsg}${winnerName} secured the win with ${winnerDmg} damage strike! ${winnerName} popped ${winnerHeal} heal! ${timeStr} battle! ${loserShieldMsg}${loserName} had ${loserDmg} damage - should have done more! ${winnerName} takes glory!`;
                 } else {
-                    msg = `${winnerName} BARELY SURVIVED with just ${winnerDmg} damage on the final blow! ${winnerName} healed ${winnerHeal} at their best! ${timeStr} of chaos! ${loserName} had ${loserDmg} damage - so close yet so far! ${winnerName} has NERVES OF STEEL!`;
+                    msg = `${winnerShieldMsg}${winnerName} BARELY SURVIVED with just ${winnerDmg} damage on the final blow! ${winnerName} healed ${winnerHeal} at their best! ${timeStr} of chaos! ${loserShieldMsg}${loserName} had ${loserDmg} damage - so close yet so far! ${winnerName} has NERVES OF STEEL!`;
                 }
                 
-                return msg.substring(0, 300);
+                return msg.substring(0, 500);
             }
 
             function getVictoryMessage(winnerName, authority) {
@@ -479,6 +503,8 @@
                 setPlayer2HighestTurnHeal(0);
                 setPlayer1Shields([0, 0, 0, 0]);
                 setPlayer2Shields([0, 0, 0, 0]);
+                setPlayer1ActiveShields([false, false, false, false]);
+                setPlayer2ActiveShields([false, false, false, false]);
                 setLastPlayer(0);
                 setGameStartTime(null);
                 addHistory('--- New Game ---', 0);
@@ -517,22 +543,46 @@
             }
 
             function setShield(player, shieldIndex) {
-                const input = prompt('Enter shield value (0-50):');
+                const input = prompt('Enter shield value (0-10):');
                 const value = parseInt(input, 10);
-                if (isNaN(value) || value < 0 || value > 50) return;
+                if (isNaN(value) || value < 0 || value > 10) return;
+                
+                const name = player === 1 ? player1Name : player2Name;
                 
                 if (player === 1) {
+                    const wasActive = player1ActiveShields[shieldIndex];
                     setPlayer1Shields(prev => {
                         const newShields = [...prev];
                         newShields[shieldIndex] = value;
                         return newShields;
                     });
+                    if (value > 0 && !wasActive) {
+                        setPlayer1ActiveShields(prev => {
+                            const newActive = [...prev];
+                            newActive[shieldIndex] = true;
+                            return newActive;
+                        });
+                    }
+                    if (value > 0) {
+                        addHistory(`${name}: Shield ${shieldIndex + 1} = ${value}`, 1);
+                    }
                 } else {
+                    const wasActive = player2ActiveShields[shieldIndex];
                     setPlayer2Shields(prev => {
                         const newShields = [...prev];
                         newShields[shieldIndex] = value;
                         return newShields;
                     });
+                    if (value > 0 && !wasActive) {
+                        setPlayer2ActiveShields(prev => {
+                            const newActive = [...prev];
+                            newActive[shieldIndex] = true;
+                            return newActive;
+                        });
+                    }
+                    if (value > 0) {
+                        addHistory(`${name}: Shield ${shieldIndex + 1} = ${value}`, 2);
+                    }
                 }
             }
 
