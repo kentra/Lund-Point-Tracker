@@ -480,6 +480,10 @@ body.table-mode .player-1 .player-name {
 }
 
 body.table-mode .player-2 {
+    order: 2;
+}
+
+body.table-mode header {
     order: 3;
 }
 
